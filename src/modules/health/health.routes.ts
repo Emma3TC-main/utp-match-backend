@@ -22,7 +22,8 @@ healthRoutes.get("/db", async (_req, res) => {
     return ok(res, {
       databaseEnabled: dbStatus.enabled,
       database: dbStatus.connected ? "connected" : "not_connected",
-      message: dbStatus.message
+      message: dbStatus.message,
+      metadata: dbStatus.metadata || {}
     });
   } catch (error) {
     return fail(
