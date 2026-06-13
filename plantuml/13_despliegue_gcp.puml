@@ -1,4 +1,4 @@
-@startuml 13_despliegue_gcp_utp_match
+@startuml
 !pragma layout smetana
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
@@ -12,83 +12,133 @@ skinparam classAttributeIconSize 0
 skinparam roundcorner 12
 skinparam nodesep 45
 skinparam ranksep 40
-title UTP Match - Diagrama de despliegue GCP + plataformas mencionadas
+title UTP Match - Arquitectura física MVP y despliegue escalable
 
-node "Cliente" as Client {
-  [Browser / PWA] as Browser
+node "Dispositivo usuario" as Device {
+  artifact "Browser móvil/desktop" as Browser
 }
 
-cloud "Vercel" as Vercel {
-  [Next.js Frontend
-React + Tailwind] as NextApp
-  [Preview Deploys
-por branch] as Preview
+cloud "Vercel / Frontend Hosting" as Vercel {
+  node "Next.js App\nSSR/Static/PWA" as Next
+  node "Edge Network\nTLS + CDN" as Edge
 }
 
-cloud "GitHub" as GitHub {
-  [Repositorio Monorepo
-apps/web + apps/api] as Repo
-  [GitHub Actions
-lint/test/build] as Actions
+cloud "Railway / Cloud Run\nBackend container" as Runtime {
+  node "API Node.js TS\nModular Monolith" as Api
+  node "Worker opcional\nAI jobs / parsing" as Worker
 }
 
-cloud "GCP Proyecto UTP Match" as GCP {
-  node "Cloud Run" as CloudRun {
-    [api-service
-Node.js TypeScript] as API
-    [worker-service
-AI jobs/parsing] as Worker
-  }
-  database "Cloud SQL PostgreSQL
-prod/staging" as CloudSQL
-  folder "Cloud Storage Buckets
-syllabi-pdfs / reports" as Buckets
-  node "Secret Manager" as SecretManager
-  node "Cloud Logging
-Cloud Monitoring" as CloudObs
-  node "Artifact Registry
-Docker images" as ArtifactRegistry
-  node "IAM Service Accounts" as ServiceAccounts
+cloud "GCP / Supabase" as Platform {
+  database "PostgreSQL\nCloud SQL o Supabase" as PG
+  folder "Cloud Storage\nPDFs y reportes" as GCS
+  node "Secret Manager\nAPI keys / JWT secret" as Secrets
+  node "IAM / Service Accounts" as IAM
 }
 
-cloud "Supabase opcional" as Supabase {
-  [Auth + RLS] as SupabaseAuth
-  database "Supabase Postgres
-MVP rápido" as SupabasePG
+cloud "Servicios externos" as External {
+  node "Chatly AI API" as Chatly
+  node "Sentry / Error Tracking" as Sentry
+  node "OpenTelemetry Collector\nCloud Logging/Monitoring" as OTel
 }
 
-cloud "Railway opcional MVP" as Railway {
-  [Backend API
-rápido para hackathon] as RailwayAPI
+Device --> Edge : HTTPS
+Edge --> Next : entrega UI / SSR
+Next --> Api : HTTPS REST /v1
+Api --> PG : SQL + JSONB
+Api --> GCS : signed URLs / objetos
+Api --> Secrets : lee secretos
+Api --> IAM : identidad de servicio
+Api --> Chatly : HTTPS + payload mínimo
+Worker --> PG : jobs / actualiza estado
+Worker --> GCS : lee PDFs/reportes
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Mapa de contrato API REST /v1
+
+package "/v1/auth" {
+  component "POST /guest\nCrear sesión temporal" as AuthGuest
+}
+package "/v1/profiles" {
+  component "GET /me\nPerfil actual" as ProfileMe
+  component "PATCH /me\nActualizar perfil" as ProfilePatch
+}
+package "/v1/consents" {
+  component "POST /\nRegistrar consentimiento" as ConsentPost
+}
+package "/v1/careers" {
+  component "GET /\nListar carreras" as CareersList
+  component "GET /{careerId}\nDetalle carrera" as CareerGet
+  component "GET /{careerId}/curriculum\nMalla por ciclos" as CurriculumGet
+}
+package "/v1/vocational-reports" {
+  component "POST /\nRegistro manual" as ReportPost
+  component "POST /import\nImportar PDF/JSON" as ReportImport
+  component "GET /{reportId}\nConsultar reporte" as ReportGet
+}
+package "/v1/comparisons" {
+  component "POST /\nGenerar comparación" as ComparePost
+  component "GET /{comparisonId}\nConsultar comparación" as CompareGet
+}
+package "/v1/syllabi" {
+  component "GET /{syllabusId}\nDetalle sílabo" as SyllabusGet
+  component "POST /{syllabusId}/explanations\nExplicar sílabo" as ExplainPost
+}
+package "/v1/plans" {
+  component "POST /\nCrear plan" as PlanPost
+  component "GET /{planId}\nConsultar plan" as PlanGet
+  component "PATCH /{planId}\nActualizar estado/tareas" as PlanPatch
+}
+package "/v1/shares" {
+  component "POST /\nCrear enlace compartido" as SharePost
+  component "GET /{token}\nLeer resumen público" as ShareGet
+}
+package "/v1/events" {
+  component "POST /\nRegistrar evento analytics" as EventPost
+}
+package "/v1/admin" {
+  component "POST /careers\nCrear carrera" as AdminCareer
+  component "POST /courses\nCrear curso" as AdminCourse
+  component "POST /syllabi\nCrear/actualizar sílabo" as AdminSyllabus
 }
 
-cloud "Proveedor externo IA" as AI {
-  [Chatly AI API] as Chatly
-}
+AuthGuest --> ProfileMe : emite token guest
+ProfileMe --> ConsentPost
+CareersList --> CareerGet
+CareerGet --> CurriculumGet
+ReportPost --> ComparePost
+ReportImport --> ComparePost
+CurriculumGet --> ComparePost
+SyllabusGet --> ExplainPost
+ComparePost --> PlanPost
+PlanPost --> SharePost
+ComparePost --> SharePost
 
-Browser --> NextApp : HTTPS
-NextApp --> API : REST /v1
-NextApp ..> RailwayAPI : alternativa MVP
-API --> CloudSQL : SQL
-API --> Buckets : signed URLs
-API --> SecretManager : API keys
-API --> ServiceAccounts : identidad
-API --> CloudObs : logs/metrics/traces
-API --> Chatly : HTTPS
-Worker --> CloudSQL
-Worker --> Buckets
-Worker --> Chatly
-Actions --> Vercel : deploy frontend
-Actions --> ArtifactRegistry : build/push image
-Actions --> CloudRun : deploy API/worker
-Actions ..> RailwayAPI : deploy MVP alternativo
-API ..> SupabaseAuth : si se usa Supabase Auth
-API ..> SupabasePG : alternativa a Cloud SQL
+Worker --> Chatly : explicación batch/cache
+Api --> OTel : traces/metrics/logs
+Worker --> OTel
+Api --> Sentry : errores app
+Next --> Sentry : errores front
 
-note bottom of GCP
-Ambiente recomendado:
-- dev: local Docker Compose
-- staging: Cloud Run + Cloud SQL pequeño
-- prod piloto: Cloud Run + Cloud SQL + Storage + Secret Manager
+note top of Runtime
+Para hackathon:
+- Railway para backend por simplicidad.
+Para evolución GCP:
+- Cloud Run para API y worker.
+end note
+
+note right of PG
+RLS si se usa Supabase.
+Backups automáticos en piloto institucional.
 end note
 @enduml

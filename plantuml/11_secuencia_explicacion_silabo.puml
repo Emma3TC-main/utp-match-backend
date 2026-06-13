@@ -1,4 +1,4 @@
-@startuml 11_secuencia_explicacion_silabo_utp_match
+@startuml
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam handwritten false
@@ -16,13 +16,11 @@ title UTP Match - Secuencia: explicación de sílabo/curso con IA
 autonumber
 actor Estudiante as Student
 participant "Course/Syllabus UI" as UI
-participant "REST Controller
-POST /v1/syllabi/{id}/explanations" as Controller
+participant "REST Controller\nPOST /v1/syllabi/{id}/explanations" as Controller
 participant "Auth Middleware" as Auth
 participant "SyllabusExplanationService" as ExplainSvc
 participant "SyllabusRepository" as SyllabusRepo
-participant "CacheRepository
-Redis opcional" as Cache
+participant "CacheRepository\nRedis opcional" as Cache
 participant "AIOrchestrator" as AI
 participant "Chatly AI" as Chatly
 participant "SchemaValidator" as Validator

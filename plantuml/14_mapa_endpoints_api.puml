@@ -15,72 +15,49 @@ skinparam ranksep 40
 title UTP Match - Mapa de contrato API REST /v1
 
 package "/v1/auth" {
-  [POST /guest
-Crear sesión temporal] as AuthGuest
+  component "POST /guest\nCrear sesión temporal" as AuthGuest
 }
 package "/v1/profiles" {
-  [GET /me
-Perfil actual] as ProfileMe
-  [PATCH /me
-Actualizar perfil] as ProfilePatch
+  component "GET /me\nPerfil actual" as ProfileMe
+  component "PATCH /me\nActualizar perfil" as ProfilePatch
 }
 package "/v1/consents" {
-  [POST /
-Registrar consentimiento] as ConsentPost
+  component "POST /\nRegistrar consentimiento" as ConsentPost
 }
 package "/v1/careers" {
-  [GET /
-Listar carreras] as CareersList
-  [GET /{careerId}
-Detalle carrera] as CareerGet
-  [GET /{careerId}/curriculum
-Malla por ciclos] as CurriculumGet
+  component "GET /\nListar carreras" as CareersList
+  component "GET /{careerId}\nDetalle carrera" as CareerGet
+  component "GET /{careerId}/curriculum\nMalla por ciclos" as CurriculumGet
 }
 package "/v1/vocational-reports" {
-  [POST /
-Registro manual] as ReportPost
-  [POST /import
-Importar PDF/JSON] as ReportImport
-  [GET /{reportId}
-Consultar reporte] as ReportGet
+  component "POST /\nRegistro manual" as ReportPost
+  component "POST /import\nImportar PDF/JSON" as ReportImport
+  component "GET /{reportId}\nConsultar reporte" as ReportGet
 }
 package "/v1/comparisons" {
-  [POST /
-Generar comparación] as ComparePost
-  [GET /{comparisonId}
-Consultar comparación] as CompareGet
+  component "POST /\nGenerar comparación" as ComparePost
+  component "GET /{comparisonId}\nConsultar comparación" as CompareGet
 }
 package "/v1/syllabi" {
-  [GET /{syllabusId}
-Detalle sílabo] as SyllabusGet
-  [POST /{syllabusId}/explanations
-Explicar sílabo] as ExplainPost
+  component "GET /{syllabusId}\nDetalle sílabo" as SyllabusGet
+  component "POST /{syllabusId}/explanations\nExplicar sílabo" as ExplainPost
 }
 package "/v1/plans" {
-  [POST /
-Crear plan] as PlanPost
-  [GET /{planId}
-Consultar plan] as PlanGet
-  [PATCH /{planId}
-Actualizar estado/tareas] as PlanPatch
+  component "POST /\nCrear plan" as PlanPost
+  component "GET /{planId}\nConsultar plan" as PlanGet
+  component "PATCH /{planId}\nActualizar estado/tareas" as PlanPatch
 }
 package "/v1/shares" {
-  [POST /
-Crear enlace compartido] as SharePost
-  [GET /{token}
-Leer resumen público] as ShareGet
+  component "POST /\nCrear enlace compartido" as SharePost
+  component "GET /{token}\nLeer resumen público" as ShareGet
 }
 package "/v1/events" {
-  [POST /
-Registrar evento analytics] as EventPost
+  component "POST /\nRegistrar evento analytics" as EventPost
 }
 package "/v1/admin" {
-  [POST /careers
-Crear carrera] as AdminCareer
-  [POST /courses
-Crear curso] as AdminCourse
-  [POST /syllabi
-Crear/actualizar sílabo] as AdminSyllabus
+  component "POST /careers\nCrear carrera" as AdminCareer
+  component "POST /courses\nCrear curso" as AdminCourse
+  component "POST /syllabi\nCrear/actualizar sílabo" as AdminSyllabus
 }
 
 AuthGuest --> ProfileMe : emite token guest
