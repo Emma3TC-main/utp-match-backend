@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.utpmatch.local/common.schema.json",
+  "title": "UTP Match Common Types",
+  "type": "object",
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "isoDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "score0to100": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "score0to10": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10
+    },
+    "audienceMode": {
+      "type": "string",
+      "enum": [
+        "student",
+        "family",
+        "advisor"
+      ]
+    },
+    "explanationStyle": {
+      "type": "string",
+      "enum": [
+        "clear_youthful",
+        "family_friendly",
+        "technical_light"
+      ]
+    }
+  }
+}

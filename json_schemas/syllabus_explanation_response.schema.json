@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.utpmatch.local/syllabus_explanation_response.schema.json",
+  "title": "SyllabusExplanationResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "syllabusId",
+    "courseName",
+    "plainExplanation",
+    "whyItMatters",
+    "difficultySignals",
+    "skillsYouBuild",
+    "modelMetadata"
+  ],
+  "properties": {
+    "syllabusId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "courseName": {
+      "type": "string"
+    },
+    "plainExplanation": {
+      "type": "string"
+    },
+    "whyItMatters": {
+      "type": "string"
+    },
+    "difficultySignals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "practiceIntensity",
+        "readingIntensity",
+        "abstractReasoning",
+        "frustrationTolerance"
+      ],
+      "properties": {
+        "practiceIntensity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "readingIntensity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "abstractReasoning": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "frustrationTolerance": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    },
+    "skillsYouBuild": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exampleActivities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fitComment": {
+      "type": "string"
+    },
+    "recommendedPreparation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "modelMetadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "provider",
+        "model",
+        "promptVersion"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "promptVersion": {
+          "type": "string"
+        },
+        "cacheHit": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

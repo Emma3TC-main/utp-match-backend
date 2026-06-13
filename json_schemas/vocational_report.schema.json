@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.utpmatch.local/vocational_report.schema.json",
+  "title": "VocationalReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "studentProfileId",
+    "sourceType",
+    "scores",
+    "topCareers"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "studentProfileId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sourceType": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "utp_pdf",
+        "utp_json",
+        "advisor_entry",
+        "mock_demo"
+      ]
+    },
+    "reportDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "topCareers": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "score"
+        ],
+        "properties": {
+          "careerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "properties": {
+        "logicalReasoning": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "communication": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "creativity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "management": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "persistence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "socialInterest": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "rawFileUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

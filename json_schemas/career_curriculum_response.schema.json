@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.utpmatch.local/career_curriculum_response.schema.json",
+  "title": "CareerCurriculumResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "careerId",
+    "careerName",
+    "cycles"
+  ],
+  "properties": {
+    "careerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "careerName": {
+      "type": "string"
+    },
+    "faculty": {
+      "type": "string"
+    },
+    "studyMode": {
+      "type": "string"
+    },
+    "cycles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cycleNumber",
+          "courses"
+        ],
+        "properties": {
+          "cycleNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "courses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "courseId",
+                "name",
+                "credits",
+                "area"
+              ],
+              "properties": {
+                "courseId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "credits": {
+                  "type": "integer"
+                },
+                "area": {
+                  "type": "string"
+                },
+                "summary": {
+                  "type": "string"
+                },
+                "syllabusId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "intensity": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

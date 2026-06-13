@@ -1,0 +1,123 @@
+@startuml 03_componentes_detallados_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Arquitectura detallada por componentes
+
+package "Frontend Next.js / React" as FE {
+  [App Router] as AppRouter
+  [AuthProvider
+Guest/JWT] as AuthProvider
+  [CareerSelector] as CareerSelector
+  [CareerComparisonView] as ComparisonView
+  [SyllabusCard] as SyllabusCard
+  [FitRadar / SkillBars] as Visuals
+  [ActionPlanBuilder] as PlanBuilder
+  [FamilyShareView] as ShareView
+  [AdminCatalogForms] as AdminForms
+  [API Client
+fetch + zod validation] as ApiClient
+  [Analytics Client] as AnalyticsClient
+}
+
+package "Backend Node.js TypeScript" as BE {
+  [HTTP Controllers
+REST /v1] as Controllers
+  [DTO Validators
+JSON Schema / Zod] as Validators
+  [Auth Middleware
+JWT + role guard] as AuthMw
+  [Consent Guard] as ConsentGuard
+  [Profile Module] as ProfileModule
+  [Catalog Module] as CatalogModule
+  [Report Module] as ReportModule
+  [Comparison Module] as ComparisonModule
+  [Syllabus Module] as SyllabusModule
+  [Plan Module] as PlanModule
+  [Share Module] as ShareModule
+  [Event Module] as EventModule
+  [Admin Module] as AdminModule
+  [AI Orchestrator] as AIOrch
+  [Repository Layer
+SQL queries] as Repos
+}
+
+package "AI Orchestration" as AI {
+  [Prompt Builder
+versionado] as PromptBuilder
+  [Context Minimizer
+PII minimization] as ContextMin
+  [Chatly Adapter] as ChatlyAdapter
+  [Structured Output Parser] as Parser
+  [Schema Validator] as SchemaValidator
+  [Cache Key Builder
+syllabus_hash + prompt_version] as CacheKey
+}
+
+package "Persistence" as DB {
+  database "PostgreSQL" as Pg
+  folder "Object Storage" as Obj
+  collections "Redis opcional" as Cache
+}
+
+AppRouter --> AuthProvider
+CareerSelector --> ApiClient
+ComparisonView --> ApiClient
+SyllabusCard --> ApiClient
+PlanBuilder --> ApiClient
+ShareView --> ApiClient
+AdminForms --> ApiClient
+ApiClient --> Controllers : REST JSON
+AnalyticsClient --> Controllers : event logs
+
+Controllers --> AuthMw
+AuthMw --> ConsentGuard
+Controllers --> Validators
+Controllers --> ProfileModule
+Controllers --> CatalogModule
+Controllers --> ReportModule
+Controllers --> ComparisonModule
+Controllers --> SyllabusModule
+Controllers --> PlanModule
+Controllers --> ShareModule
+Controllers --> EventModule
+Controllers --> AdminModule
+
+ProfileModule --> Repos
+CatalogModule --> Repos
+ReportModule --> Repos
+ReportModule --> Obj
+ComparisonModule --> Repos
+ComparisonModule --> AIOrch
+SyllabusModule --> Repos
+SyllabusModule --> AIOrch
+PlanModule --> Repos
+ShareModule --> Repos
+EventModule --> Repos
+AdminModule --> Repos
+
+AIOrch --> PromptBuilder
+AIOrch --> ContextMin
+AIOrch --> CacheKey
+AIOrch --> Cache
+AIOrch --> ChatlyAdapter
+ChatlyAdapter --> Parser
+Parser --> SchemaValidator
+SchemaValidator --> AIOrch
+Repos --> Pg
+
+note bottom of FE
+Front valida respuestas para evitar romper UI.
+Back valida contratos para evitar guardar JSON inválido.
+end note
+@enduml

@@ -1,0 +1,133 @@
+@startuml 09_clases_frontend_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Diagrama de clases/componentes frontend Next.js/React
+
+package "app routes" {
+  class HomePage <<page>>
+  class OnboardingPage <<page>>
+  class CareerExplorerPage <<page>>
+  class ComparisonPage <<page>>
+  class SyllabusPage <<page>>
+  class ActionPlanPage <<page>>
+  class SharePage <<page>>
+  class AdminCatalogPage <<page>>
+}
+
+package "components" {
+  class LayoutShell <<component>> {
+    +children: ReactNode
+  }
+  class GuestBanner <<component>>
+  class VocationalReportForm <<component>> {
+    +onSubmit(reportInput): void
+  }
+  class CareerSelector <<component>> {
+    +selectedCareerIds: string[]
+    +maxSelection: number
+  }
+  class CareerCard <<component>> {
+    +career: CareerViewModel
+  }
+  class CurriculumTimeline <<component>> {
+    +cycles: CycleViewModel[]
+  }
+  class CourseCard <<component>> {
+    +course: CourseViewModel
+  }
+  class ComparisonBoard <<component>> {
+    +comparison: ComparisonViewModel
+  }
+  class SkillRadar <<component>> {
+    +dimensions: DimensionScores
+  }
+  class FitNarrative <<component>> {
+    +text: string
+  }
+  class SyllabusExplanationPanel <<component>> {
+    +explanation: ExplanationViewModel
+  }
+  class ActionPlanBuilder <<component>> {
+    +tasks: PlanTaskViewModel[]
+  }
+  class ShareSummaryCard <<component>>
+  class AdminCourseEditor <<component>>
+}
+
+package "state/hooks" {
+  class AuthStore <<zustand/context>> {
+    +session: Session
+    +isGuest: boolean
+    +setSession(session): void
+  }
+  class ComparisonStore <<zustand/context>> {
+    +selectedCareers: string[]
+    +currentComparison: ComparisonViewModel
+  }
+  class useCareers <<hook>> {
+    +data: CareerViewModel[]
+    +loading: boolean
+  }
+  class useCreateComparison <<hook>> {
+    +mutate(dto): Promise<ComparisonViewModel>
+  }
+  class useExplainSyllabus <<hook>> {
+    +mutate(dto): Promise<ExplanationViewModel>
+  }
+  class useActionPlan <<hook>>
+}
+
+package "lib" {
+  class ApiClient {
+    +get(path): Promise<T>
+    +post(path, body): Promise<T>
+    -attachAuthHeaders(): Headers
+  }
+  class SchemaGuard {
+    +parseCareerResponse(json): CareerViewModel
+    +parseComparisonResponse(json): ComparisonViewModel
+  }
+  class AnalyticsClient {
+    +track(name, props): void
+  }
+  class ShareLinkBuilder {
+    +build(planId, comparisonId): string
+  }
+}
+
+HomePage --> CareerExplorerPage
+OnboardingPage --> VocationalReportForm
+CareerExplorerPage --> CareerSelector
+CareerExplorerPage --> CareerCard
+CareerExplorerPage --> CurriculumTimeline
+ComparisonPage --> ComparisonBoard
+ComparisonBoard --> SkillRadar
+ComparisonBoard --> FitNarrative
+SyllabusPage --> SyllabusExplanationPanel
+ActionPlanPage --> ActionPlanBuilder
+SharePage --> ShareSummaryCard
+AdminCatalogPage --> AdminCourseEditor
+CareerSelector --> useCareers
+ComparisonBoard --> useCreateComparison
+SyllabusExplanationPanel --> useExplainSyllabus
+ActionPlanBuilder --> useActionPlan
+useCareers --> ApiClient
+useCreateComparison --> ApiClient
+useExplainSyllabus --> ApiClient
+useActionPlan --> ApiClient
+ApiClient --> SchemaGuard
+CareerSelector --> ComparisonStore
+LayoutShell --> AuthStore
+AnalyticsClient --> ApiClient
+@enduml

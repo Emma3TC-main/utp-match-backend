@@ -1,0 +1,86 @@
+@startuml 12_storyboard_journey_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Storyboard y journey del estudiante
+
+|Estudiante|
+start
+:1. Llega desde feria, QR, landing o promotor;
+note right
+Dolor: "tengo opciones, pero no sé cómo se vive la carrera".
+end note
+:2. Entra como invitado o crea perfil;
+:3. Acepta consentimiento y registra intereses;
+
+|UTP Match|
+:4. Presenta onboarding con promesa clara:
+"entiende la carrera antes de matricularte";
+:5. Solicita reporte vocacional manual/PDF
+o formulario corto MVP;
+
+|Estudiante|
+:6. Ingresa resultados / top intereses;
+:7. Selecciona 2 carreras a comparar;
+
+|UTP Match|
+:8. Consulta malla, cursos, sílabos y puntajes;
+:9. Muestra duelo visual:
+- ciclos
+- intensidad
+- habilidades
+- diferencias clave;
+
+|Estudiante|
+:10. Abre un curso que no entiende;
+
+|UTP Match + Chatly AI|
+:11. Traduce el sílabo a lenguaje escolar;
+:12. Explica dificultad, utilidad y habilidades;
+
+|Estudiante|
+:13. Lee fitNarrative y preguntas guía;
+if (¿Tiene más claridad?) then (sí)
+  :14. Guarda shortlist;
+else (aún duda)
+  :14b. Cambia carrera comparada
+o revisa otro curso;
+  -> 8;
+endif
+
+|UTP Match|
+:15. Genera plan de acción:
+- revisar curso demo
+- hablar con familia
+- asistir a charla
+- validar sede/horarios;
+
+|Familia / Tutor|
+:16. Recibe resumen compartido;
+:17. Conversa con evidencia, no solo opiniones;
+
+|Estudiante|
+:18. Decide siguiente paso de admisión
+con menor incertidumbre;
+stop
+
+legend right
+Storyboard MVP:
+1. Entrada por QR.
+2. Perfil/report vocacional.
+3. Comparación visual.
+4. Traducción de sílabo.
+5. Match narrativo.
+6. Plan y resumen familiar.
+endlegend
+@enduml

@@ -1,0 +1,97 @@
+@startuml 14_mapa_endpoints_api_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Mapa de contrato API REST /v1
+
+package "/v1/auth" {
+  [POST /guest
+Crear sesión temporal] as AuthGuest
+}
+package "/v1/profiles" {
+  [GET /me
+Perfil actual] as ProfileMe
+  [PATCH /me
+Actualizar perfil] as ProfilePatch
+}
+package "/v1/consents" {
+  [POST /
+Registrar consentimiento] as ConsentPost
+}
+package "/v1/careers" {
+  [GET /
+Listar carreras] as CareersList
+  [GET /{careerId}
+Detalle carrera] as CareerGet
+  [GET /{careerId}/curriculum
+Malla por ciclos] as CurriculumGet
+}
+package "/v1/vocational-reports" {
+  [POST /
+Registro manual] as ReportPost
+  [POST /import
+Importar PDF/JSON] as ReportImport
+  [GET /{reportId}
+Consultar reporte] as ReportGet
+}
+package "/v1/comparisons" {
+  [POST /
+Generar comparación] as ComparePost
+  [GET /{comparisonId}
+Consultar comparación] as CompareGet
+}
+package "/v1/syllabi" {
+  [GET /{syllabusId}
+Detalle sílabo] as SyllabusGet
+  [POST /{syllabusId}/explanations
+Explicar sílabo] as ExplainPost
+}
+package "/v1/plans" {
+  [POST /
+Crear plan] as PlanPost
+  [GET /{planId}
+Consultar plan] as PlanGet
+  [PATCH /{planId}
+Actualizar estado/tareas] as PlanPatch
+}
+package "/v1/shares" {
+  [POST /
+Crear enlace compartido] as SharePost
+  [GET /{token}
+Leer resumen público] as ShareGet
+}
+package "/v1/events" {
+  [POST /
+Registrar evento analytics] as EventPost
+}
+package "/v1/admin" {
+  [POST /careers
+Crear carrera] as AdminCareer
+  [POST /courses
+Crear curso] as AdminCourse
+  [POST /syllabi
+Crear/actualizar sílabo] as AdminSyllabus
+}
+
+AuthGuest --> ProfileMe : emite token guest
+ProfileMe --> ConsentPost
+CareersList --> CareerGet
+CareerGet --> CurriculumGet
+ReportPost --> ComparePost
+ReportImport --> ComparePost
+CurriculumGet --> ComparePost
+SyllabusGet --> ExplainPost
+ComparePost --> PlanPost
+PlanPost --> SharePost
+ComparePost --> SharePost
+@enduml

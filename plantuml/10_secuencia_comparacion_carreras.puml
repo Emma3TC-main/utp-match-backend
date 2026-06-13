@@ -1,0 +1,85 @@
+@startuml 10_secuencia_comparacion_carreras_utp_match
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Secuencia: comparación de carreras
+
+autonumber
+actor Estudiante as Student
+participant "Next.js UI
+ComparisonPage" as UI
+participant "API Client" as Client
+participant "REST Controller
+POST /v1/comparisons" as Controller
+participant "Auth Middleware" as Auth
+participant "Consent Guard" as Consent
+participant "ComparisonService" as CompareSvc
+participant "CatalogRepository" as CatalogRepo
+participant "ReportRepository" as ReportRepo
+participant "AIOrchestrator" as AI
+participant "ChatlyAIAdapter" as Chatly
+participant "SchemaValidator" as Validator
+participant "ComparisonRepository" as ComparisonRepo
+participant "EventLogService" as EventLog
+
+database "PostgreSQL" as PG
+
+Student -> UI : selecciona carrera A y B
++ reporte vocacional
+UI -> Client : createComparison(requestDTO)
+Client -> Controller : POST /v1/comparisons
+JWT + JSON
+Controller -> Auth : validateJWTOrGuest()
+Auth --> Controller : user/session context
+Controller -> Consent : assertConsent(profileId, "ai_processing")
+Consent --> Controller : ok / guest limited
+Controller -> CompareSvc : compareCareers(dto, context)
+CompareSvc -> CatalogRepo : getCareerWithCurriculum(leftCareerId)
+CatalogRepo -> PG : SELECT careers + courses + syllabi
+PG --> CatalogRepo : carrera A + cursos
+CatalogRepo --> CompareSvc : leftCareerContext
+CompareSvc -> CatalogRepo : getCareerWithCurriculum(rightCareerId)
+CatalogRepo -> PG : SELECT careers + courses + syllabi
+PG --> CatalogRepo : carrera B + cursos
+CatalogRepo --> CompareSvc : rightCareerContext
+CompareSvc -> ReportRepo : findById(vocationalReportId)
+ReportRepo -> PG : SELECT scores_json, top_careers_json
+PG --> ReportRepo : vocational report
+ReportRepo --> CompareSvc : reportContext
+CompareSvc -> CompareSvc : buildDeterministicScores()
+math/coding/management/etc.
+CompareSvc -> AI : generateComparison(context)
+AI -> AI : minimizePII()
+buildPrompt(promptVersion)
+AI -> Chatly : completeStructured(prompt, schema)
+Chatly --> AI : raw JSON candidate
+AI -> Validator : validate(comparison.schema.json)
+Validator --> AI : valid payload
+AI --> CompareSvc : comparison_json
+CompareSvc -> ComparisonRepo : save(comparison_json)
+ComparisonRepo -> PG : INSERT career_comparisons
+PG --> ComparisonRepo : comparison_id
+ComparisonRepo --> CompareSvc : CareerComparison
+CompareSvc -> EventLog : track("comparison_created")
+EventLog -> PG : INSERT event_logs
+CompareSvc --> Controller : responseDTO
+Controller --> Client : 201 Created + comparison
+Client --> UI : render comparison
+UI --> Student : resumen + barras + preguntas guía
+
+alt JSON inválido o proveedor IA falla
+  AI -> Validator : validation error
+  AI --> CompareSvc : fallback deterministic narrative
+  CompareSvc -> EventLog : track("ai_fallback_used")
+  CompareSvc --> Controller : response with warningMetadata
+end
+@enduml

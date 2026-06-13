@@ -1,0 +1,62 @@
+@startuml 11_secuencia_explicacion_silabo_utp_match
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Secuencia: explicación de sílabo/curso con IA
+
+autonumber
+actor Estudiante as Student
+participant "Course/Syllabus UI" as UI
+participant "REST Controller
+POST /v1/syllabi/{id}/explanations" as Controller
+participant "Auth Middleware" as Auth
+participant "SyllabusExplanationService" as ExplainSvc
+participant "SyllabusRepository" as SyllabusRepo
+participant "CacheRepository
+Redis opcional" as Cache
+participant "AIOrchestrator" as AI
+participant "Chatly AI" as Chatly
+participant "SchemaValidator" as Validator
+participant "ExplanationRepository" as ExplainRepo
+participant "EventLogService" as EventLog
+database "PostgreSQL" as PG
+
+Student -> UI : abre curso "Principios de Algoritmos"
+UI -> Controller : POST /v1/syllabi/{syllabusId}/explanations
+Controller -> Auth : validateJWTOrGuest()
+Auth --> Controller : context
+Controller -> ExplainSvc : explain(syllabusId, requestDTO)
+ExplainSvc -> SyllabusRepo : getSyllabusWithCourse(syllabusId)
+SyllabusRepo -> PG : SELECT syllabi + career_courses + courses
+PG --> SyllabusRepo : syllabus + parsed_json
+SyllabusRepo --> ExplainSvc : syllabusContext
+ExplainSvc -> Cache : get(cacheKey: pdf_hash + audience + promptVersion)
+alt cache hit
+  Cache --> ExplainSvc : explanation_json
+else cache miss
+  ExplainSvc -> AI : generateSyllabusExplanation(syllabusContext)
+  AI -> AI : buildPrompt + limit context
+  AI -> Chatly : prompt + JSON Schema
+  Chatly --> AI : candidate JSON
+  AI -> Validator : validate(syllabus_explanation.schema.json)
+  Validator --> AI : ok
+  AI --> ExplainSvc : explanation_json
+  ExplainSvc -> ExplainRepo : saveExplanation(payload)
+  ExplainRepo -> PG : INSERT syllabus_explanations
+  ExplainSvc -> Cache : set(cacheKey, explanation_json)
+end
+ExplainSvc -> EventLog : track("syllabus_explained")
+EventLog -> PG : INSERT event_logs
+ExplainSvc --> Controller : responseDTO
+Controller --> UI : 200 OK
+UI --> Student : explicación, dificultad y habilidades
+@enduml

@@ -1,0 +1,80 @@
+@startuml 02_arquitectura_fisica_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Arquitectura física MVP y despliegue escalable
+
+node "Dispositivo usuario" as Device {
+  artifact "Browser móvil/desktop" as Browser
+}
+
+cloud "Vercel / Frontend Hosting" as Vercel {
+  node "Next.js App
+SSR/Static/PWA" as Next
+  node "Edge Network
+TLS + CDN" as Edge
+}
+
+cloud "Railway / Cloud Run
+Backend container" as Runtime {
+  node "API Node.js TS
+Modular Monolith" as Api
+  node "Worker opcional
+AI jobs / parsing" as Worker
+}
+
+cloud "GCP / Supabase" as Platform {
+  database "PostgreSQL
+Cloud SQL o Supabase" as PG
+  folder "Cloud Storage
+PDFs y reportes" as GCS
+  node "Secret Manager
+API keys / JWT secret" as Secrets
+  node "IAM / Service Accounts" as IAM
+}
+
+cloud "Servicios externos" as External {
+  node "Chatly AI API" as Chatly
+  node "Sentry / Error Tracking" as Sentry
+  node "OpenTelemetry Collector
+Cloud Logging/Monitoring" as OTel
+}
+
+Device --> Edge : HTTPS
+Edge --> Next : entrega UI / SSR
+Next --> Api : HTTPS REST /v1
+Api --> PG : SQL + JSONB
+Api --> GCS : signed URLs / objetos
+Api --> Secrets : lee secretos
+Api --> IAM : identidad de servicio
+Api --> Chatly : HTTPS + payload mínimo
+Worker --> PG : jobs / actualiza estado
+Worker --> GCS : lee PDFs/reportes
+Worker --> Chatly : explicación batch/cache
+Api --> OTel : traces/metrics/logs
+Worker --> OTel
+Api --> Sentry : errores app
+Next --> Sentry : errores front
+
+note top of Runtime
+Para hackathon:
+- Railway para backend por simplicidad.
+Para evolución GCP:
+- Cloud Run para API y worker.
+end note
+
+note right of PG
+RLS si se usa Supabase.
+Backups automáticos en piloto institucional.
+end note
+@enduml

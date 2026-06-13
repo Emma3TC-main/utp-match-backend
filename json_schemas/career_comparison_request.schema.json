@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.utpmatch.local/career_comparison_request.schema.json",
+  "title": "CareerComparisonRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "studentProfileId",
+    "leftCareerId",
+    "rightCareerId",
+    "audienceMode",
+    "explanationStyle"
+  ],
+  "properties": {
+    "studentProfileId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "leftCareerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "rightCareerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "vocationalReportId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "audienceMode": {
+      "type": "string",
+      "enum": [
+        "student",
+        "family",
+        "advisor"
+      ]
+    },
+    "explanationStyle": {
+      "type": "string",
+      "enum": [
+        "clear_youthful",
+        "family_friendly",
+        "technical_light"
+      ]
+    },
+    "includeSyllabusSignals": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

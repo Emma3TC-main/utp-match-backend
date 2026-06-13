@@ -1,0 +1,83 @@
+@startuml 07_casos_uso_utp_match
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Diagrama de casos de uso
+
+actor "Estudiante" as Student
+actor "Invitado" as Guest
+actor "Familia / Tutor" as Family
+actor "Orientador / Promotor" as Advisor
+actor "Administrador" as Admin
+actor "Sistema IA
+Chatly AI" as AI
+
+rectangle "UTP Match" {
+  usecase "Entrar como invitado" as UCGuest
+  usecase "Crear perfil estudiante" as UCProfile
+  usecase "Aceptar consentimiento" as UCConsent
+  usecase "Registrar reporte vocacional
+manual / archivo" as UCReport
+  usecase "Explorar catálogo
+de carreras" as UCCatalog
+  usecase "Comparar carreras" as UCCompare
+  usecase "Ver match perfil-carrera" as UCFit
+  usecase "Explicar curso/sílabo
+en lenguaje claro" as UCExplain
+  usecase "Guardar shortlist" as UCShortlist
+  usecase "Crear plan de acción" as UCPlan
+  usecase "Compartir resumen
+con familia" as UCShare
+  usecase "Revisar resumen compartido" as UCReadShare
+  usecase "Acompañar decisión
+con evidencia" as UCAdvisor
+  usecase "Mantener carreras, cursos
+y sílabos" as UCAdminCatalog
+  usecase "Revisar analítica
+y eventos" as UCAnalytics
+  usecase "Generar explicación
+estructurada" as UCAIExplain
+  usecase "Generar narrativa
+de comparación" as UCAICompare
+}
+
+Guest --> UCGuest
+Guest --> UCCatalog
+Guest --> UCCompare
+Student --> UCProfile
+Student --> UCConsent
+Student --> UCReport
+Student --> UCCatalog
+Student --> UCCompare
+Student --> UCExplain
+Student --> UCShortlist
+Student --> UCPlan
+Student --> UCShare
+Family --> UCReadShare
+Advisor --> UCAdvisor
+Advisor --> UCCatalog
+Advisor --> UCCompare
+Admin --> UCAdminCatalog
+Admin --> UCAnalytics
+AI --> UCAIExplain
+AI --> UCAICompare
+
+UCProfile .> UCConsent : <<include>>
+UCReport .> UCConsent : <<include>>
+UCCompare .> UCFit : <<include>>
+UCCompare .> UCAICompare : <<include>>
+UCExplain .> UCAIExplain : <<include>>
+UCPlan .> UCShortlist : <<extend>>
+UCShare .> UCPlan : <<extend>>
+UCAdvisor .> UCCompare : <<include>>
+@enduml
