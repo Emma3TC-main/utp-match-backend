@@ -3,9 +3,10 @@ import { ok } from "../../shared/responses/api-response";
 
 export const eventsRoutes = Router();
 
-eventsRoutes.post("/", (req, res) => {
+eventsRoutes.post("/", (_req, res) => {
   return ok(res, {
-    message: "Evento analítico recibido en modo mock",
-    received: req.body
+    module: "events",
+    status: "received",
+    mode: "stub"
   });
 });

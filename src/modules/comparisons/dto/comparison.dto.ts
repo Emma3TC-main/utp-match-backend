@@ -3,18 +3,19 @@ import {
   audienceModeSchema,
   explanationStyleSchema,
   modelMetadataSchema,
+  nonEmptyStringSchema,
   score0To100Schema
 } from "../../../shared/schemas/common.schema";
 
 export const comparisonIdParamsSchema = z.object({
-  comparisonId: z.string()
+  comparisonId: nonEmptyStringSchema
 });
 
 export const careerComparisonRequestSchema = z.object({
-  studentProfileId: z.string().optional(),
-  leftCareerId: z.string(),
-  rightCareerId: z.string(),
-  vocationalReportId: z.string().nullable().optional(),
+  studentProfileId: nonEmptyStringSchema.optional(),
+  leftCareerId: nonEmptyStringSchema,
+  rightCareerId: nonEmptyStringSchema,
+  vocationalReportId: nonEmptyStringSchema.nullable().optional(),
   audienceMode: audienceModeSchema.default("student"),
   explanationStyle: explanationStyleSchema.default("clear_youthful"),
   includeSyllabusSignals: z.boolean().default(true),
@@ -30,25 +31,25 @@ export const dimensionScoresSchema = z.object({
 });
 
 export const careerHighlightSchema = z.object({
-  careerId: z.string(),
-  title: z.string(),
-  body: z.string()
+  careerId: nonEmptyStringSchema,
+  title: nonEmptyStringSchema,
+  body: nonEmptyStringSchema
 });
 
 export const careerComparisonResponseSchema = z.object({
-  comparisonId: z.string(),
-  summary: z.string(),
+  comparisonId: nonEmptyStringSchema,
+  summary: nonEmptyStringSchema,
   dimensions: z.object({
     left: dimensionScoresSchema,
     right: dimensionScoresSchema
   }),
   careerHighlights: z.array(careerHighlightSchema).default([]),
-  fitNarrative: z.string(),
+  fitNarrative: nonEmptyStringSchema,
   risksOrWarnings: z.array(z.string()).default([]),
   recommendedQuestions: z.array(z.string()).default([]),
   nextBestActions: z.array(z.string()).default([]),
   modelMetadata: modelMetadataSchema.optional(),
-  createdAt: z.string()
+  createdAt: nonEmptyStringSchema
 });
 
 export type CareerComparisonRequestDto = z.infer<typeof careerComparisonRequestSchema>;
