@@ -1,4 +1,4 @@
-@startuml 05_der_logico_utp_match
+@startuml
 !pragma layout smetana
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false

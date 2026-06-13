@@ -19,35 +19,26 @@ node "Dispositivo usuario" as Device {
 }
 
 cloud "Vercel / Frontend Hosting" as Vercel {
-  node "Next.js App
-SSR/Static/PWA" as Next
-  node "Edge Network
-TLS + CDN" as Edge
+  node "Next.js App\nSSR/Static/PWA" as Next
+  node "Edge Network\nTLS + CDN" as Edge
 }
 
-cloud "Railway / Cloud Run
-Backend container" as Runtime {
-  node "API Node.js TS
-Modular Monolith" as Api
-  node "Worker opcional
-AI jobs / parsing" as Worker
+cloud "Railway / Cloud Run\nBackend container" as Runtime {
+  node "API Node.js TS\nModular Monolith" as Api
+  node "Worker opcional\nAI jobs / parsing" as Worker
 }
 
 cloud "GCP / Supabase" as Platform {
-  database "PostgreSQL
-Cloud SQL o Supabase" as PG
-  folder "Cloud Storage
-PDFs y reportes" as GCS
-  node "Secret Manager
-API keys / JWT secret" as Secrets
+  database "PostgreSQL\nCloud SQL o Supabase" as PG
+  folder "Cloud Storage\nPDFs y reportes" as GCS
+  node "Secret Manager\nAPI keys / JWT secret" as Secrets
   node "IAM / Service Accounts" as IAM
 }
 
 cloud "Servicios externos" as External {
   node "Chatly AI API" as Chatly
   node "Sentry / Error Tracking" as Sentry
-  node "OpenTelemetry Collector
-Cloud Logging/Monitoring" as OTel
+  node "OpenTelemetry Collector\nCloud Logging/Monitoring" as OTel
 }
 
 Device --> Edge : HTTPS

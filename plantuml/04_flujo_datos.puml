@@ -1,4 +1,4 @@
-@startuml 04_flujo_datos_utp_match
+@startuml
 !pragma layout smetana
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
@@ -18,43 +18,25 @@ actor "Estudiante" as Student
 actor "Administrador" as Admin
 actor "Familia/Tutor" as Family
 
-rectangle "P1. Capturar perfil
-y consentimiento" as P1
-rectangle "P2. Registrar reporte
-vocacional" as P2
-rectangle "P3. Consultar catálogo
-de carreras/cursos" as P3
-rectangle "P4. Generar comparación
-de carreras" as P4
-rectangle "P5. Explicar sílabo
-con IA" as P5
-rectangle "P6. Crear plan
-de acción" as P6
+rectangle "P1. Capturar perfil\ny consentimiento" as P1
+rectangle "P2. Registrar reporte\nvocacional" as P2
+rectangle "P3. Consultar catálogo\nde carreras/cursos" as P3
+rectangle "P4. Generar comparación\nde carreras" as P4
+rectangle "P5. Explicar sílabo\ncon IA" as P5
+rectangle "P6. Crear plan\nde acción" as P6
 rectangle "P7. Compartir resumen" as P7
-rectangle "P8. Registrar analítica
-y auditoría" as P8
-rectangle "P9. Mantener catálogo
-y sílabos" as P9
+rectangle "P8. Registrar analítica\ny auditoría" as P8
+rectangle "P9. Mantener catálogo\ny sílabos" as P9
 
-collections "D1 users
-student_profiles
-consent_records" as D1
+collections "D1 users\nstudent_profiles\nconsent_records" as D1
 collections "D2 vocational_reports" as D2
-database "D3 careers
-courses
-career_courses
-syllabi" as D3
-collections "D4 career_comparisons
-syllabus_explanations" as D4
-collections "D5 plans_of_action
-shared_links" as D5
-collections "D6 event_logs
-audit_logs" as D6
-folder "D7 object storage
-PDFs/reportes" as D7
+database "D3 careers\ncourses\ncareer_courses\nsyllabi" as D3
+collections "D4 career_comparisons\nsyllabus_explanations" as D4
+collections "D5 plans_of_action\nshared_links" as D5
+collections "D6 event_logs\naudit_logs" as D6
+folder "D7 object storage\nPDFs/reportes" as D7
 cloud "E1 Chatly AI" as E1
-cloud "E2 Test Vocacional UTP
-Futuro / carga manual MVP" as E2
+cloud "E2 Test Vocacional UTP\nFuturo / carga manual MVP" as E2
 
 Student --> P1 : datos básicos / guest
 P1 --> D1 : perfil + consentimiento
@@ -86,8 +68,7 @@ P6 --> Student : plan accionable
 Student --> P7 : genera enlace familiar
 P7 --> D5 : shared_link
 Family --> P7 : lee resumen compartido
-Admin --> P9 : alta/edición carreras
-cursos/sílabos
+Admin --> P9 : alta/edición carreras\ncursos/sílabos
 P9 --> D3 : datos maestros versionados
 P1 --> P8
 P2 --> P8

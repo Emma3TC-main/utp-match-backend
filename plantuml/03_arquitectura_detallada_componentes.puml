@@ -1,4 +1,4 @@
-@startuml 03_componentes_detallados_utp_match
+@startuml
 !pragma layout smetana
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
@@ -15,53 +15,44 @@ skinparam ranksep 40
 title UTP Match - Arquitectura detallada por componentes
 
 package "Frontend Next.js / React" as FE {
-  [App Router] as AppRouter
-  [AuthProvider
-Guest/JWT] as AuthProvider
-  [CareerSelector] as CareerSelector
-  [CareerComparisonView] as ComparisonView
-  [SyllabusCard] as SyllabusCard
-  [FitRadar / SkillBars] as Visuals
-  [ActionPlanBuilder] as PlanBuilder
-  [FamilyShareView] as ShareView
-  [AdminCatalogForms] as AdminForms
-  [API Client
-fetch + zod validation] as ApiClient
-  [Analytics Client] as AnalyticsClient
+  component "App Router" as AppRouter
+  component "AuthProvider\nGuest/JWT" as AuthProvider
+  component "CareerSelector" as CareerSelector
+  component "CareerComparisonView" as ComparisonView
+  component "SyllabusCard" as SyllabusCard
+  component "FitRadar / SkillBars" as Visuals
+  component "ActionPlanBuilder" as PlanBuilder
+  component "FamilyShareView" as ShareView
+  component "AdminCatalogForms" as AdminForms
+  component "API Client\nfetch + zod validation" as ApiClient
+  component "Analytics Client" as AnalyticsClient
 }
 
 package "Backend Node.js TypeScript" as BE {
-  [HTTP Controllers
-REST /v1] as Controllers
-  [DTO Validators
-JSON Schema / Zod] as Validators
-  [Auth Middleware
-JWT + role guard] as AuthMw
-  [Consent Guard] as ConsentGuard
-  [Profile Module] as ProfileModule
-  [Catalog Module] as CatalogModule
-  [Report Module] as ReportModule
-  [Comparison Module] as ComparisonModule
-  [Syllabus Module] as SyllabusModule
-  [Plan Module] as PlanModule
-  [Share Module] as ShareModule
-  [Event Module] as EventModule
-  [Admin Module] as AdminModule
-  [AI Orchestrator] as AIOrch
-  [Repository Layer
-SQL queries] as Repos
+  component "HTTP Controllers\nREST /v1" as Controllers
+  component "DTO Validators\nJSON Schema / Zod" as Validators
+  component "Auth Middleware\nJWT + role guard" as AuthMw
+  component "Consent Guard" as ConsentGuard
+  component "Profile Module" as ProfileModule
+  component "Catalog Module" as CatalogModule
+  component "Report Module" as ReportModule
+  component "Comparison Module" as ComparisonModule
+  component "Syllabus Module" as SyllabusModule
+  component "Plan Module" as PlanModule
+  component "Share Module" as ShareModule
+  component "Event Module" as EventModule
+  component "Admin Module" as AdminModule
+  component "AI Orchestrator" as AIOrch
+  component "Repository Layer\nSQL queries" as Repos
 }
 
 package "AI Orchestration" as AI {
-  [Prompt Builder
-versionado] as PromptBuilder
-  [Context Minimizer
-PII minimization] as ContextMin
-  [Chatly Adapter] as ChatlyAdapter
-  [Structured Output Parser] as Parser
-  [Schema Validator] as SchemaValidator
-  [Cache Key Builder
-syllabus_hash + prompt_version] as CacheKey
+  component "Prompt Builder\nversionado" as PromptBuilder
+  component "Context Minimizer\nPII minimization" as ContextMin
+  component "Chatly Adapter" as ChatlyAdapter
+  component "Structured Output Parser" as Parser
+  component "Schema Validator" as SchemaValidator
+  component "Cache Key Builder\nsyllabus_hash + prompt_version" as CacheKey
 }
 
 package "Persistence" as DB {

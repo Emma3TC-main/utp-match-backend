@@ -1,4 +1,4 @@
-@startuml 07_casos_uso_utp_match
+@startuml
 left to right direction
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
@@ -19,36 +19,26 @@ actor "Invitado" as Guest
 actor "Familia / Tutor" as Family
 actor "Orientador / Promotor" as Advisor
 actor "Administrador" as Admin
-actor "Sistema IA
-Chatly AI" as AI
+actor "Sistema IA\nChatly AI" as AI
 
 rectangle "UTP Match" {
   usecase "Entrar como invitado" as UCGuest
   usecase "Crear perfil estudiante" as UCProfile
   usecase "Aceptar consentimiento" as UCConsent
-  usecase "Registrar reporte vocacional
-manual / archivo" as UCReport
-  usecase "Explorar catálogo
-de carreras" as UCCatalog
+  usecase "Registrar reporte vocacional\nmanual / archivo" as UCReport
+  usecase "Explorar catálogo\nde carreras" as UCCatalog
   usecase "Comparar carreras" as UCCompare
   usecase "Ver match perfil-carrera" as UCFit
-  usecase "Explicar curso/sílabo
-en lenguaje claro" as UCExplain
+  usecase "Explicar curso/sílabo\nen lenguaje claro" as UCExplain
   usecase "Guardar shortlist" as UCShortlist
   usecase "Crear plan de acción" as UCPlan
-  usecase "Compartir resumen
-con familia" as UCShare
+  usecase "Compartir resumen\ncon familia" as UCShare
   usecase "Revisar resumen compartido" as UCReadShare
-  usecase "Acompañar decisión
-con evidencia" as UCAdvisor
-  usecase "Mantener carreras, cursos
-y sílabos" as UCAdminCatalog
-  usecase "Revisar analítica
-y eventos" as UCAnalytics
-  usecase "Generar explicación
-estructurada" as UCAIExplain
-  usecase "Generar narrativa
-de comparación" as UCAICompare
+  usecase "Acompañar decisión\ncon evidencia" as UCAdvisor
+  usecase "Mantener carreras, cursos\ny sílabos" as UCAdminCatalog
+  usecase "Revisar analítica\ny eventos" as UCAnalytics
+  usecase "Generar explicación\nestructurada" as UCAIExplain
+  usecase "Generar narrativa\nde comparación" as UCAICompare
 }
 
 Guest --> UCGuest
