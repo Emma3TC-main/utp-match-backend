@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.utpmatch.local/action_plan.schema.json",
+  "title": "ActionPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "studentProfileId",
+    "targetCareerId",
+    "tasks",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "studentProfileId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "targetCareerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "targetTerm": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "completed",
+        "archived"
+      ]
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "type",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "review_syllabus",
+              "talk_family",
+              "attend_event",
+              "ask_advisor",
+              "compare_again",
+              "prepare_skill"
+            ]
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "done",
+              "skipped"
+            ]
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

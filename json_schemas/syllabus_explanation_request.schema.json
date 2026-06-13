@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.utpmatch.local/syllabus_explanation_request.schema.json",
+  "title": "SyllabusExplanationRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "studentProfileId",
+    "targetAudience",
+    "tone",
+    "outputFormat",
+    "includeDifficultySignals"
+  ],
+  "properties": {
+    "studentProfileId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "targetAudience": {
+      "type": "string",
+      "enum": [
+        "student",
+        "family",
+        "advisor"
+      ]
+    },
+    "tone": {
+      "type": "string",
+      "enum": [
+        "clear_youthful",
+        "family_friendly",
+        "technical_light"
+      ]
+    },
+    "outputFormat": {
+      "type": "string",
+      "const": "structured_json"
+    },
+    "includeDifficultySignals": {
+      "type": "boolean"
+    },
+    "includeFitComment": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

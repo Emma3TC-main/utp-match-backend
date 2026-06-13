@@ -1,0 +1,189 @@
+@startuml 08_clases_backend_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Diagrama de clases backend Node.js/TypeScript
+
+package "controllers" {
+  class AuthController {
+    +createGuestSession(req): AuthSessionDTO
+  }
+  class CareersController {
+    +listCareers(query): CareerDTO[]
+    +getCareer(id): CareerDetailDTO
+    +getCurriculum(id): CurriculumDTO
+  }
+  class VocationalReportsController {
+    +createReport(dto): VocationalReportDTO
+    +importReport(file, dto): VocationalReportDTO
+  }
+  class ComparisonsController {
+    +createComparison(dto): ComparisonResponseDTO
+    +getComparison(id): ComparisonResponseDTO
+  }
+  class SyllabiController {
+    +explainSyllabus(syllabusId, dto): SyllabusExplanationDTO
+  }
+  class PlansController {
+    +createPlan(dto): ActionPlanDTO
+    +getPlan(id): ActionPlanDTO
+  }
+}
+
+package "domain" {
+  class User {
+    +id: UUID
+    +email: string
+    +role: UserRole
+    +status: AccountStatus
+  }
+  class StudentProfile {
+    +id: UUID
+    +userId: UUID
+    +firstName: string
+    +schoolYear: string
+    +campusInterest: string
+    +preferredLanguage: string
+  }
+  class VocationalReport {
+    +id: UUID
+    +studentProfileId: UUID
+    +sourceType: string
+    +topCareers: CareerSignal[]
+    +scores: VocationalScores
+  }
+  class Career {
+    +id: UUID
+    +utpCode: string
+    +name: string
+    +faculty: string
+    +studyMode: string
+  }
+  class Course {
+    +id: UUID
+    +utpCode: string
+    +name: string
+    +credits: number
+    +area: string
+    +skillTags: string[]
+  }
+  class CareerCourse {
+    +id: UUID
+    +cycleNumber: number
+    +isRequired: boolean
+    +sequenceOrder: number
+    +intensity: CourseIntensity
+  }
+  class Syllabus {
+    +id: UUID
+    +versionLabel: string
+    +pdfUrl: string
+    +pdfHash: string
+    +parsed: ParsedSyllabus
+  }
+  class CareerComparison {
+    +id: UUID
+    +leftCareerId: UUID
+    +rightCareerId: UUID
+    +comparison: ComparisonJSON
+  }
+  class ActionPlan {
+    +id: UUID
+    +targetCareerId: UUID
+    +targetTerm: string
+    +tasks: PlanTask[]
+    +status: PlanStatus
+  }
+}
+
+package "services" {
+  class ProfileService {
+    +createProfile(dto): StudentProfile
+    +getProfile(userId): StudentProfile
+  }
+  class ConsentService {
+    +assertConsent(profileId, type): void
+    +grantConsent(dto): ConsentRecord
+  }
+  class CatalogService {
+    +listCareers(filter): Career[]
+    +getCurriculum(careerId): Curriculum
+  }
+  class ReportService {
+    +createManualReport(dto): VocationalReport
+    +parseImportedReport(file): VocationalReport
+  }
+  class ComparisonService {
+    +compareCareers(dto): CareerComparison
+    -buildComparisonContext(dto): ComparisonContext
+  }
+  class SyllabusExplanationService {
+    +explain(syllabusId, dto): SyllabusExplanation
+    -getOrCreateCachedExplanation(ctx): SyllabusExplanation
+  }
+  class ActionPlanService {
+    +createPlan(dto): ActionPlan
+  }
+  class EventLogService {
+    +track(eventName, props): void
+  }
+  class AIOrchestrator {
+    +generateComparison(ctx): ComparisonJSON
+    +generateSyllabusExplanation(ctx): ExplanationJSON
+    -validateJson(schema, payload): void
+  }
+}
+
+package "repositories" {
+  interface UserRepository
+  interface ProfileRepository
+  interface CareerRepository
+  interface CourseRepository
+  interface SyllabusRepository
+  interface ComparisonRepository
+  interface PlanRepository
+  interface EventRepository
+}
+
+package "adapters" {
+  class ChatlyAIAdapter {
+    +completeStructured(prompt, schema): object
+  }
+  class ObjectStorageAdapter {
+    +putObject(file): string
+    +getSignedUrl(path): string
+  }
+}
+
+User "1" -- "0..1" StudentProfile
+StudentProfile "1" -- "0..*" VocationalReport
+Career "1" -- "0..*" CareerCourse
+Course "1" -- "0..*" CareerCourse
+CareerCourse "1" -- "0..*" Syllabus
+StudentProfile "1" -- "0..*" CareerComparison
+StudentProfile "1" -- "0..*" ActionPlan
+
+CareersController --> CatalogService
+VocationalReportsController --> ReportService
+ComparisonsController --> ComparisonService
+SyllabiController --> SyllabusExplanationService
+PlansController --> ActionPlanService
+ComparisonService --> AIOrchestrator
+SyllabusExplanationService --> AIOrchestrator
+AIOrchestrator --> ChatlyAIAdapter
+ReportService --> ObjectStorageAdapter
+CatalogService --> CareerRepository
+CatalogService --> CourseRepository
+ComparisonService --> ComparisonRepository
+ActionPlanService --> PlanRepository
+@enduml

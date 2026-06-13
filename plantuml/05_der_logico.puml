@@ -1,0 +1,156 @@
+@startuml 05_der_logico_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - DER lógico
+
+entity "Usuario" as users {
+  * id
+  --
+  email
+  rol
+  proveedor_auth
+  estado
+}
+entity "Perfil Estudiante" as student_profiles {
+  * id
+  --
+  usuario_id
+  nombre
+  grado_escolar
+  campus_interes
+  idioma
+}
+entity "Consentimiento" as consent_records {
+  * id
+  --
+  perfil_id
+  tipo
+  version
+  otorgado_en
+  revocado_en
+}
+entity "Reporte Vocacional" as vocational_reports {
+  * id
+  --
+  perfil_id
+  fuente
+  fecha_reporte
+  carreras_top
+  puntajes
+}
+entity "Carrera" as careers {
+  * id
+  --
+  codigo_utp
+  nombre
+  facultad
+  modalidad
+  estado
+}
+entity "Curso" as courses {
+  * id
+  --
+  codigo_utp
+  nombre
+  creditos
+  area
+  resumen
+}
+entity "Curso en Carrera" as career_courses {
+  * id
+  --
+  carrera_id
+  curso_id
+  ciclo
+  obligatorio
+  orden
+}
+entity "Sílabo" as syllabi {
+  * id
+  --
+  career_course_id
+  version
+  pdf_url
+  pdf_hash
+  texto_extraido
+  parsed_json
+}
+entity "Explicación de Sílabo" as syllabus_explanations {
+  * id
+  --
+  syllabus_id
+  audiencia
+  proveedor
+  modelo
+  prompt_version
+  explanation_json
+}
+entity "Comparación de Carreras" as career_comparisons {
+  * id
+  --
+  perfil_id
+  carrera_izq_id
+  carrera_der_id
+  reporte_id
+  comparison_json
+}
+entity "Plan de Acción" as plans_of_action {
+  * id
+  --
+  perfil_id
+  carrera_objetivo_id
+  periodo_objetivo
+  tareas
+  estado
+}
+entity "Enlace Compartido" as shared_links {
+  * id
+  --
+  plan_id/comparison_id
+  token
+  expiracion
+}
+entity "Evento de Producto" as event_logs {
+  * id
+  --
+  usuario_id
+  evento
+  propiedades
+}
+entity "Auditoría" as audit_logs {
+  * id
+  --
+  actor_usuario_id
+  accion
+  recurso
+  metadata
+}
+
+users ||--o| student_profiles : posee
+student_profiles ||--o{ consent_records : acepta
+student_profiles ||--o{ vocational_reports : registra
+student_profiles ||--o{ career_comparisons : genera
+student_profiles ||--o{ plans_of_action : crea
+careers ||--o{ career_courses : contiene
+courses ||--o{ career_courses : participa
+career_courses ||--o{ syllabi : versiona
+syllabi ||--o{ syllabus_explanations : explica
+careers ||--o{ plans_of_action : objetivo
+careers ||--o{ career_comparisons : izquierda/derecha
+vocational_reports ||--o{ career_comparisons : contextualiza
+plans_of_action ||--o{ shared_links : comparte
+career_comparisons ||--o{ shared_links : comparte
+users ||--o{ event_logs : registra
+users ||--o{ audit_logs : audita
+@enduml

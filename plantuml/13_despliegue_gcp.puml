@@ -1,0 +1,94 @@
+@startuml 13_despliegue_gcp_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - Diagrama de despliegue GCP + plataformas mencionadas
+
+node "Cliente" as Client {
+  [Browser / PWA] as Browser
+}
+
+cloud "Vercel" as Vercel {
+  [Next.js Frontend
+React + Tailwind] as NextApp
+  [Preview Deploys
+por branch] as Preview
+}
+
+cloud "GitHub" as GitHub {
+  [Repositorio Monorepo
+apps/web + apps/api] as Repo
+  [GitHub Actions
+lint/test/build] as Actions
+}
+
+cloud "GCP Proyecto UTP Match" as GCP {
+  node "Cloud Run" as CloudRun {
+    [api-service
+Node.js TypeScript] as API
+    [worker-service
+AI jobs/parsing] as Worker
+  }
+  database "Cloud SQL PostgreSQL
+prod/staging" as CloudSQL
+  folder "Cloud Storage Buckets
+syllabi-pdfs / reports" as Buckets
+  node "Secret Manager" as SecretManager
+  node "Cloud Logging
+Cloud Monitoring" as CloudObs
+  node "Artifact Registry
+Docker images" as ArtifactRegistry
+  node "IAM Service Accounts" as ServiceAccounts
+}
+
+cloud "Supabase opcional" as Supabase {
+  [Auth + RLS] as SupabaseAuth
+  database "Supabase Postgres
+MVP rápido" as SupabasePG
+}
+
+cloud "Railway opcional MVP" as Railway {
+  [Backend API
+rápido para hackathon] as RailwayAPI
+}
+
+cloud "Proveedor externo IA" as AI {
+  [Chatly AI API] as Chatly
+}
+
+Browser --> NextApp : HTTPS
+NextApp --> API : REST /v1
+NextApp ..> RailwayAPI : alternativa MVP
+API --> CloudSQL : SQL
+API --> Buckets : signed URLs
+API --> SecretManager : API keys
+API --> ServiceAccounts : identidad
+API --> CloudObs : logs/metrics/traces
+API --> Chatly : HTTPS
+Worker --> CloudSQL
+Worker --> Buckets
+Worker --> Chatly
+Actions --> Vercel : deploy frontend
+Actions --> ArtifactRegistry : build/push image
+Actions --> CloudRun : deploy API/worker
+Actions ..> RailwayAPI : deploy MVP alternativo
+API ..> SupabaseAuth : si se usa Supabase Auth
+API ..> SupabasePG : alternativa a Cloud SQL
+
+note bottom of GCP
+Ambiente recomendado:
+- dev: local Docker Compose
+- staging: Cloud Run + Cloud SQL pequeño
+- prod piloto: Cloud Run + Cloud SQL + Storage + Secret Manager
+end note
+@enduml

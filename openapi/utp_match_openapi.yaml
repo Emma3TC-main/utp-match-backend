@@ -1,0 +1,657 @@
+openapi: 3.1.0
+info:
+  title: UTP Match / SyllabusX API
+  version: 1.0.0-mvp
+  description: REST-first API para exploración vocacional asistida, comparación de carreras, explicación de sílabos y planes de acción.
+servers:
+  - url: https://api.utpmatch.local/v1
+    description: Local/staging example
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Profiles
+  - name: Careers
+  - name: VocationalReports
+  - name: Comparisons
+  - name: Syllabi
+  - name: Plans
+  - name: Consents
+  - name: Shares
+  - name: Events
+paths:
+  /auth/guest:
+    post:
+      tags: [Auth]
+      summary: Crear sesión temporal de invitado
+      security: []
+      responses:
+        '201':
+          description: Sesión guest creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
+  /profiles/me:
+    get:
+      tags: [Profiles]
+      summary: Obtener perfil del usuario autenticado
+      responses:
+        '200':
+          description: Perfil actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfile'
+    patch:
+      tags: [Profiles]
+      summary: Actualizar perfil del estudiante
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentProfilePatch'
+      responses:
+        '200':
+          description: Perfil actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfile'
+  /careers:
+    get:
+      tags: [Careers]
+      summary: Listar carreras publicables
+      security: []
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: faculty
+          schema: { type: string }
+      responses:
+        '200':
+          description: Carreras disponibles
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Career' }
+  /careers/{careerId}:
+    get:
+      tags: [Careers]
+      summary: Obtener detalle de carrera
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CareerId'
+      responses:
+        '200':
+          description: Carrera
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CareerDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /careers/{careerId}/curriculum:
+    get:
+      tags: [Careers]
+      summary: Obtener malla/ciclos/cursos de una carrera
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CareerId'
+      responses:
+        '200':
+          description: Malla curricular por ciclos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CareerCurriculumResponse' }
+  /consents:
+    post:
+      tags: [Consents]
+      summary: Registrar consentimiento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConsentRequest' }
+      responses:
+        '201':
+          description: Consentimiento registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConsentRecord' }
+  /vocational-reports:
+    post:
+      tags: [VocationalReports]
+      summary: Crear reporte vocacional manual/semiestructurado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VocationalReportCreate' }
+      responses:
+        '201':
+          description: Reporte creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocationalReport' }
+  /vocational-reports/import:
+    post:
+      tags: [VocationalReports]
+      summary: Importar reporte vocacional desde PDF/JSON/CSV
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [studentProfileId, sourceType, file]
+              properties:
+                studentProfileId: { type: string, format: uuid }
+                sourceType: { type: string, enum: [utp_pdf, utp_json] }
+                file: { type: string, format: binary }
+      responses:
+        '202':
+          description: Archivo recibido para procesamiento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VocationalReport' }
+  /comparisons:
+    post:
+      tags: [Comparisons]
+      summary: Generar comparación entre dos carreras
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CareerComparisonRequest' }
+            example:
+              studentProfileId: 0d611730-cdbc-4ce5-b188-24dd3c7d6f1f
+              leftCareerId: 34f6f3cf-3f27-4459-a413-65ecd21954e0
+              rightCareerId: 44c35809-14a2-4daf-b63d-4a54d7288268
+              vocationalReportId: 2fd00e80-b33b-4f14-94f7-3bd67a1bd199
+              audienceMode: student
+              explanationStyle: clear_youthful
+      responses:
+        '201':
+          description: Comparación generada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CareerComparisonResponse' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /comparisons/{comparisonId}:
+    get:
+      tags: [Comparisons]
+      summary: Consultar comparación guardada
+      parameters:
+        - in: path
+          name: comparisonId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Comparación
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CareerComparisonResponse' }
+  /syllabi/{syllabusId}:
+    get:
+      tags: [Syllabi]
+      summary: Obtener detalle de sílabo parseado
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/SyllabusId'
+      responses:
+        '200':
+          description: Sílabo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyllabusDetail' }
+  /syllabi/{syllabusId}/explanations:
+    post:
+      tags: [Syllabi]
+      summary: Generar explicación de sílabo/curso con IA
+      parameters:
+        - $ref: '#/components/parameters/SyllabusId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SyllabusExplanationRequest' }
+      responses:
+        '200':
+          description: Explicación generada o cacheada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyllabusExplanationResponse' }
+  /plans:
+    post:
+      tags: [Plans]
+      summary: Crear plan de acción
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActionPlanCreate' }
+      responses:
+        '201':
+          description: Plan creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActionPlan' }
+  /plans/{planId}:
+    get:
+      tags: [Plans]
+      summary: Consultar plan de acción
+      parameters:
+        - in: path
+          name: planId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Plan
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActionPlan' }
+    patch:
+      tags: [Plans]
+      summary: Actualizar estado/tareas del plan
+      parameters:
+        - in: path
+          name: planId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActionPlanPatch' }
+      responses:
+        '200':
+          description: Plan actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActionPlan' }
+  /shares:
+    post:
+      tags: [Shares]
+      summary: Crear enlace compartido para familia/orientador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ShareCreate' }
+      responses:
+        '201':
+          description: Enlace creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShareResponse' }
+  /shares/{token}:
+    get:
+      tags: [Shares]
+      summary: Leer resumen público compartido
+      security: []
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Resumen compartido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SharedSummary' }
+  /events:
+    post:
+      tags: [Events]
+      summary: Registrar evento analítico de producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EventLogCreate' }
+      responses:
+        '202':
+          description: Evento aceptado
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    CareerId:
+      in: path
+      name: careerId
+      required: true
+      schema: { type: string, format: uuid }
+    SyllabusId:
+      in: path
+      name: syllabusId
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ValidationError:
+      description: Error de validación
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  schemas:
+    AuthSession:
+      type: object
+      required: [accessToken, user]
+      properties:
+        accessToken: { type: string }
+        expiresIn: { type: integer }
+        user: { $ref: '#/components/schemas/User' }
+    User:
+      type: object
+      required: [id, role, status]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email, nullable: true }
+        role: { type: string, enum: [guest, student, guardian, advisor, admin, system] }
+        status: { type: string, enum: [active, inactive, blocked, deleted] }
+    StudentProfile:
+      type: object
+      required: [id, userId, schoolYear, preferredLanguage]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        firstName: { type: string, nullable: true }
+        schoolYear: { type: string, enum: [4_secundaria, 5_secundaria, egresado, otro] }
+        campusInterest: { type: string, nullable: true }
+        ageBand: { type: string, enum: [under_16, 16_17, 18_plus, unknown], nullable: true }
+        preferredLanguage: { type: string, default: es-PE }
+        familyShareEnabled: { type: boolean }
+    StudentProfilePatch:
+      type: object
+      properties:
+        firstName: { type: string }
+        schoolYear: { type: string, enum: [4_secundaria, 5_secundaria, egresado, otro] }
+        campusInterest: { type: string }
+        ageBand: { type: string, enum: [under_16, 16_17, 18_plus, unknown] }
+        preferredLanguage: { type: string }
+        familyShareEnabled: { type: boolean }
+    Career:
+      type: object
+      required: [id, name, status]
+      properties:
+        id: { type: string, format: uuid }
+        utpCode: { type: string }
+        name: { type: string }
+        faculty: { type: string }
+        studyMode: { type: string }
+        shortDescription: { type: string }
+        tags: { type: array, items: { type: string } }
+        status: { type: string }
+    CareerDetail:
+      allOf:
+        - $ref: '#/components/schemas/Career'
+        - type: object
+          properties:
+            valueProposition: { type: string }
+            firstCycleSummary: { type: string }
+            dominantSkills: { type: array, items: { type: string } }
+    CareerCurriculumResponse:
+      type: object
+      required: [careerId, careerName, cycles]
+      properties:
+        careerId: { type: string, format: uuid }
+        careerName: { type: string }
+        faculty: { type: string }
+        studyMode: { type: string }
+        cycles:
+          type: array
+          items:
+            type: object
+            required: [cycleNumber, courses]
+            properties:
+              cycleNumber: { type: integer, minimum: 1 }
+              courses:
+                type: array
+                items: { $ref: '#/components/schemas/CurriculumCourse' }
+    CurriculumCourse:
+      type: object
+      required: [courseId, name, credits, area]
+      properties:
+        courseId: { type: string, format: uuid }
+        syllabusId: { type: string, format: uuid, nullable: true }
+        name: { type: string }
+        credits: { type: integer }
+        area: { type: string }
+        summary: { type: string }
+        intensity:
+          type: object
+          additionalProperties: { type: integer, minimum: 0, maximum: 10 }
+    ConsentRequest:
+      type: object
+      required: [studentProfileId, consentType, version]
+      properties:
+        studentProfileId: { type: string, format: uuid }
+        consentType: { type: string, enum: [terms, privacy, vocational_report_processing, ai_processing, family_share] }
+        version: { type: string }
+        granted: { type: boolean, default: true }
+    ConsentRecord:
+      type: object
+      required: [id, studentProfileId, consentType, version, grantedAt]
+      properties:
+        id: { type: string, format: uuid }
+        studentProfileId: { type: string, format: uuid }
+        consentType: { type: string }
+        version: { type: string }
+        grantedAt: { type: string, format: date-time }
+        revokedAt: { type: string, format: date-time, nullable: true }
+    VocationalReportCreate:
+      type: object
+      required: [studentProfileId, sourceType, scores, topCareers]
+      properties:
+        studentProfileId: { type: string, format: uuid }
+        sourceType: { type: string, enum: [manual, utp_json, advisor_entry, mock_demo] }
+        reportDate: { type: string, format: date }
+        topCareers:
+          type: array
+          items: { $ref: '#/components/schemas/CareerSignal' }
+        scores:
+          type: object
+          additionalProperties: { type: integer, minimum: 0, maximum: 100 }
+    VocationalReport:
+      allOf:
+        - $ref: '#/components/schemas/VocationalReportCreate'
+        - type: object
+          required: [id, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            rawFileUrl: { type: string, nullable: true }
+            createdAt: { type: string, format: date-time }
+    CareerSignal:
+      type: object
+      required: [name, score]
+      properties:
+        careerId: { type: string, format: uuid, nullable: true }
+        name: { type: string }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        reason: { type: string }
+    CareerComparisonRequest:
+      type: object
+      required: [studentProfileId, leftCareerId, rightCareerId, audienceMode, explanationStyle]
+      properties:
+        studentProfileId: { type: string, format: uuid }
+        leftCareerId: { type: string, format: uuid }
+        rightCareerId: { type: string, format: uuid }
+        vocationalReportId: { type: string, format: uuid, nullable: true }
+        audienceMode: { type: string, enum: [student, family, advisor] }
+        explanationStyle: { type: string, enum: [clear_youthful, family_friendly, technical_light] }
+        includeSyllabusSignals: { type: boolean, default: true }
+    CareerComparisonResponse:
+      type: object
+      required: [comparisonId, summary, dimensions, fitNarrative, recommendedQuestions, createdAt]
+      properties:
+        comparisonId: { type: string, format: uuid }
+        summary: { type: string }
+        dimensions:
+          type: object
+          required: [left, right]
+          properties:
+            left: { $ref: '#/components/schemas/DimensionScores' }
+            right: { $ref: '#/components/schemas/DimensionScores' }
+        careerHighlights:
+          type: array
+          items:
+            type: object
+            properties:
+              careerId: { type: string, format: uuid }
+              title: { type: string }
+              body: { type: string }
+        fitNarrative: { type: string }
+        risksOrWarnings: { type: array, items: { type: string } }
+        recommendedQuestions: { type: array, items: { type: string } }
+        nextBestActions: { type: array, items: { type: string } }
+        modelMetadata: { $ref: '#/components/schemas/ModelMetadata' }
+        createdAt: { type: string, format: date-time }
+    DimensionScores:
+      type: object
+      required: [math, coding, management, communication, practice]
+      properties:
+        math: { type: integer, minimum: 0, maximum: 100 }
+        coding: { type: integer, minimum: 0, maximum: 100 }
+        management: { type: integer, minimum: 0, maximum: 100 }
+        communication: { type: integer, minimum: 0, maximum: 100 }
+        practice: { type: integer, minimum: 0, maximum: 100 }
+    SyllabusDetail:
+      type: object
+      required: [syllabusId, courseId, versionLabel, parsed]
+      properties:
+        syllabusId: { type: string, format: uuid }
+        courseId: { type: string, format: uuid }
+        courseName: { type: string }
+        versionLabel: { type: string }
+        pdfUrl: { type: string, nullable: true }
+        parsed: { type: object, additionalProperties: true }
+    SyllabusExplanationRequest:
+      type: object
+      required: [studentProfileId, targetAudience, tone, outputFormat, includeDifficultySignals]
+      properties:
+        studentProfileId: { type: string, format: uuid }
+        targetAudience: { type: string, enum: [student, family, advisor] }
+        tone: { type: string, enum: [clear_youthful, family_friendly, technical_light] }
+        outputFormat: { type: string, enum: [structured_json] }
+        includeDifficultySignals: { type: boolean }
+    SyllabusExplanationResponse:
+      type: object
+      required: [syllabusId, courseName, plainExplanation, whyItMatters, difficultySignals, skillsYouBuild, modelMetadata]
+      properties:
+        syllabusId: { type: string, format: uuid }
+        courseName: { type: string }
+        plainExplanation: { type: string }
+        whyItMatters: { type: string }
+        difficultySignals:
+          type: object
+          properties:
+            practiceIntensity: { type: integer, minimum: 0, maximum: 10 }
+            readingIntensity: { type: integer, minimum: 0, maximum: 10 }
+            abstractReasoning: { type: integer, minimum: 0, maximum: 10 }
+            frustrationTolerance: { type: integer, minimum: 0, maximum: 10 }
+        skillsYouBuild: { type: array, items: { type: string } }
+        exampleActivities: { type: array, items: { type: string } }
+        fitComment: { type: string }
+        recommendedPreparation: { type: array, items: { type: string } }
+        modelMetadata: { $ref: '#/components/schemas/ModelMetadata' }
+    ActionPlanCreate:
+      type: object
+      required: [studentProfileId, targetCareerId, tasks]
+      properties:
+        studentProfileId: { type: string, format: uuid }
+        targetCareerId: { type: string, format: uuid }
+        targetTerm: { type: string }
+        tasks:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/PlanTask' }
+        notes: { type: string }
+    ActionPlan:
+      allOf:
+        - $ref: '#/components/schemas/ActionPlanCreate'
+        - type: object
+          required: [id, status, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            status: { type: string, enum: [draft, active, completed, archived] }
+            createdAt: { type: string, format: date-time }
+    ActionPlanPatch:
+      type: object
+      properties:
+        status: { type: string, enum: [draft, active, completed, archived] }
+        tasks:
+          type: array
+          items: { $ref: '#/components/schemas/PlanTask' }
+        notes: { type: string }
+    PlanTask:
+      type: object
+      required: [title, type, status]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        type: { type: string, enum: [review_syllabus, talk_family, attend_event, ask_advisor, compare_again, prepare_skill] }
+        dueDate: { type: string, format: date, nullable: true }
+        status: { type: string, enum: [pending, done, skipped] }
+    ShareCreate:
+      type: object
+      required: [ownerProfileId, audience]
+      properties:
+        ownerProfileId: { type: string, format: uuid }
+        comparisonId: { type: string, format: uuid, nullable: true }
+        planId: { type: string, format: uuid, nullable: true }
+        audience: { type: string, enum: [family, advisor, public_demo] }
+        expiresAt: { type: string, format: date-time, nullable: true }
+    ShareResponse:
+      type: object
+      required: [shareUrl, expiresAt]
+      properties:
+        shareUrl: { type: string, format: uri }
+        expiresAt: { type: string, format: date-time, nullable: true }
+    SharedSummary:
+      type: object
+      properties:
+        comparison: { $ref: '#/components/schemas/CareerComparisonResponse' }
+        plan: { $ref: '#/components/schemas/ActionPlan' }
+    EventLogCreate:
+      type: object
+      required: [eventName, eventProps]
+      properties:
+        eventName: { type: string }
+        eventProps: { type: object, additionalProperties: true }
+        requestId: { type: string }
+    ModelMetadata:
+      type: object
+      properties:
+        provider: { type: string, example: chatly_ai }
+        model: { type: string }
+        promptVersion: { type: string }
+        cacheHit: { type: boolean }
+        fallbackUsed: { type: boolean }
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }

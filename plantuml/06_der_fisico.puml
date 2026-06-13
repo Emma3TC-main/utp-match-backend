@@ -1,0 +1,184 @@
+@startuml 06_der_fisico_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match - DER físico PostgreSQL/Supabase
+
+entity "users" as users {
+  * id : uuid <<PK>>
+  --
+  email : text <<UK, not null>>
+  role : user_role <<not null>>
+  auth_provider : text <<not null>>
+  status : account_status <<default active>>
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+entity "student_profiles" as student_profiles {
+  * id : uuid <<PK>>
+  --
+  user_id : uuid <<FK users.id, UK>>
+  first_name : text
+  school_year : text
+  campus_interest : text
+  age_band : text
+  preferred_language : text
+  family_share_enabled : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+entity "consent_records" as consent_records {
+  * id : uuid <<PK>>
+  --
+  student_profile_id : uuid <<FK>>
+  consent_type : text
+  version : text
+  granted_at : timestamptz
+  revoked_at : timestamptz
+  evidence_json : jsonb
+}
+entity "vocational_reports" as vocational_reports {
+  * id : uuid <<PK>>
+  --
+  student_profile_id : uuid <<FK>>
+  source_type : text
+  report_date : date
+  top_careers_json : jsonb
+  scores_json : jsonb
+  raw_file_url : text
+  created_at : timestamptz
+}
+entity "careers" as careers {
+  * id : uuid <<PK>>
+  --
+  utp_code : text <<UK>>
+  name : text
+  faculty : text
+  study_mode : text
+  status : text
+  tags_json : jsonb
+}
+entity "courses" as courses {
+  * id : uuid <<PK>>
+  --
+  utp_code : text <<UK>>
+  name : text
+  credits : integer
+  area : text
+  summary : text
+  skill_tags_json : jsonb
+}
+entity "career_courses" as career_courses {
+  * id : uuid <<PK>>
+  --
+  career_id : uuid <<FK careers.id>>
+  course_id : uuid <<FK courses.id>>
+  cycle_number : integer
+  is_required : boolean
+  sequence_order : integer
+  intensity_json : jsonb
+  UNIQUE(career_id, course_id, cycle_number)
+}
+entity "syllabi" as syllabi {
+  * id : uuid <<PK>>
+  --
+  career_course_id : uuid <<FK>>
+  version_label : text
+  pdf_url : text
+  pdf_hash : text
+  extracted_text : text
+  parsed_json : jsonb
+  published_at : timestamptz
+  UNIQUE(career_course_id, version_label)
+}
+entity "syllabus_explanations" as syllabus_explanations {
+  * id : uuid <<PK>>
+  --
+  syllabus_id : uuid <<FK>>
+  target_audience : text
+  provider : text
+  model : text
+  prompt_version : text
+  explanation_json : jsonb
+  created_at : timestamptz
+}
+entity "career_comparisons" as career_comparisons {
+  * id : uuid <<PK>>
+  --
+  student_profile_id : uuid <<FK>>
+  left_career_id : uuid <<FK>>
+  right_career_id : uuid <<FK>>
+  vocational_report_id : uuid <<FK nullable>>
+  audience_mode : text
+  comparison_json : jsonb
+  created_at : timestamptz
+}
+entity "plans_of_action" as plans_of_action {
+  * id : uuid <<PK>>
+  --
+  student_profile_id : uuid <<FK>>
+  target_career_id : uuid <<FK>>
+  target_term : text
+  status : text
+  tasks_json : jsonb
+  notes : text
+  created_at : timestamptz
+}
+entity "shared_links" as shared_links {
+  * id : uuid <<PK>>
+  --
+  owner_profile_id : uuid <<FK>>
+  comparison_id : uuid <<FK nullable>>
+  plan_id : uuid <<FK nullable>>
+  token_hash : text <<UK>>
+  expires_at : timestamptz
+  created_at : timestamptz
+}
+entity "event_logs" as event_logs {
+  * id : uuid <<PK>>
+  --
+  user_id : uuid <<FK nullable>>
+  event_name : text
+  event_props_json : jsonb
+  request_id : text
+  created_at : timestamptz
+}
+entity "audit_logs" as audit_logs {
+  * id : uuid <<PK>>
+  --
+  actor_user_id : uuid <<FK nullable>>
+  action : text
+  resource_type : text
+  resource_id : uuid
+  metadata_json : jsonb
+  created_at : timestamptz
+}
+
+users ||--o| student_profiles
+student_profiles ||--o{ consent_records
+student_profiles ||--o{ vocational_reports
+student_profiles ||--o{ career_comparisons
+student_profiles ||--o{ plans_of_action
+student_profiles ||--o{ shared_links
+careers ||--o{ career_courses
+courses ||--o{ career_courses
+career_courses ||--o{ syllabi
+syllabi ||--o{ syllabus_explanations
+careers ||--o{ career_comparisons : left/right
+vocational_reports ||--o{ career_comparisons
+careers ||--o{ plans_of_action
+career_comparisons ||--o{ shared_links
+plans_of_action ||--o{ shared_links
+users ||--o{ event_logs
+users ||--o{ audit_logs
+@enduml

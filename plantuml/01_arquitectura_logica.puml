@@ -1,0 +1,124 @@
+@startuml 01_arquitectura_logica_utp_match
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #444444
+skinparam classAttributeIconSize 0
+skinparam roundcorner 12
+skinparam nodesep 45
+skinparam ranksep 40
+title UTP Match / SyllabusX - Arquitectura lógica MVP + evolución
+
+actor "Estudiante
+4.º/5.º secundaria" as Student
+actor "Familia / Tutor" as Family
+actor "Promotor / Orientador UTP" as Advisor
+actor "Administrador
+de catálogo" as Admin
+
+package "Capa de experiencia" as UX {
+  [Web App Responsive
+Next.js / React / Tailwind] as WebApp
+  [PWA Mobile Simplified
+React responsive] as PWA
+  [Panel Admin mínimo
+Catálogo y sílabos] as AdminUI
+}
+
+package "Capa de acceso y seguridad" as Access {
+  [API Gateway / Edge Router
+HTTPS + CORS + Rate Limit] as Gateway
+  [Auth & Roles
+Supabase Auth / GCP IAM
+JWT + RLS] as Auth
+  [Consentimiento y privacidad
+versionado + auditoría] as Consent
+}
+
+package "Backend modular monolith
+Node.js + TypeScript para MVP" as Backend {
+  [User/Profile Service] as ProfileSvc
+  [Career Catalog Service] as CatalogSvc
+  [Vocational Report Adapter
+manual / PDF / JSON] as ReportSvc
+  [Comparison Engine
+perfil + carrera + sílabo] as CompareSvc
+  [Syllabus Explainer Service] as ExplainSvc
+  [Action Plan Service] as PlanSvc
+  [Analytics Event Service] as EventSvc
+  [AI Orchestration Service
+prompting + JSON validation] as AISvc
+}
+
+package "Datos y conocimiento" as Data {
+  database "PostgreSQL / Supabase
+Relacional + JSONB" as Postgres
+  folder "Object Storage
+PDFs de sílabos / reportes" as Storage
+  collections "Redis / Cache opcional
+explicaciones frecuentes" as Redis
+}
+
+cloud "Chatly AI
+Proveedor IA generativa" as Chatly
+cloud "Test Vocacional UTP
+Adapter futuro / carga manual MVP" as VocationalUTP
+cloud "CRM / Admisión UTP
+Integración futura" as CRM
+cloud "Observabilidad
+Logs + métricas + trazas" as Obs
+
+Student --> WebApp : explora carreras
+compara y guarda plan
+Student --> PWA : uso móvil
+Family --> WebApp : revisa resumen compartido
+Advisor --> WebApp : acompaña decisión
+Admin --> AdminUI : mantiene catálogo
+
+WebApp --> Gateway : REST /v1 + JSON
+PWA --> Gateway : REST /v1 + JSON
+AdminUI --> Gateway : REST /v1/admin
+Gateway --> Auth : valida JWT / guest
+Gateway --> Consent : verifica consentimiento
+Gateway --> Backend : enruta dominio
+
+ProfileSvc --> Postgres
+CatalogSvc --> Postgres
+ReportSvc --> Postgres
+ReportSvc --> Storage : guarda PDF/archivo
+ReportSvc ..> VocationalUTP : adapter posterior
+CompareSvc --> Postgres : mallas, cursos, perfil
+CompareSvc --> AISvc : narrativa y preguntas
+ExplainSvc --> Postgres : sílabo parseado
+ExplainSvc --> AISvc : explicación estructurada
+PlanSvc --> Postgres
+EventSvc --> Postgres : eventos de producto
+AISvc --> Chatly : prompt + contexto mínimo
+AISvc --> Redis : cache por syllabus_hash/prompt_version
+Backend --> Obs : logs/traces/metrics
+Gateway --> Obs
+CRM ..> EventSvc : lead cualificado
+roadmap 6-12 meses
+
+note right of Backend
+MVP decidido:
+- React / Next.js en frontend
+- Node.js + TypeScript como backend modular
+- REST-first
+- PostgreSQL/Supabase
+- Chatly AI para recomendación/explicación
+end note
+
+note bottom of Data
+JSONB se usa para:
+- scores_json del reporte vocacional
+- parsed_json del sílabo
+- explanation_json y comparison_json
+- event_props_json / metadata_json
+end note
+@enduml

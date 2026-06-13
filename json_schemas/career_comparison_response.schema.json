@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.utpmatch.local/career_comparison_response.schema.json",
+  "title": "CareerComparisonResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "comparisonId",
+    "summary",
+    "dimensions",
+    "fitNarrative",
+    "recommendedQuestions",
+    "createdAt"
+  ],
+  "properties": {
+    "comparisonId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "left",
+        "right"
+      ],
+      "properties": {
+        "left": {
+          "$ref": "#/$defs/dimensionScores"
+        },
+        "right": {
+          "$ref": "#/$defs/dimensionScores"
+        }
+      }
+    },
+    "careerHighlights": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/careerHighlight"
+      }
+    },
+    "fitNarrative": {
+      "type": "string"
+    },
+    "risksOrWarnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommendedQuestions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "nextBestActions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "modelMetadata": {
+      "$ref": "#/$defs/modelMetadata"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "dimensionScores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "math",
+        "coding",
+        "management",
+        "communication",
+        "practice"
+      ],
+      "properties": {
+        "math": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "coding": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "management": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "communication": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "practice": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "careerHighlight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "careerId",
+        "title",
+        "body"
+      ],
+      "properties": {
+        "careerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        }
+      }
+    },
+    "modelMetadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "promptVersion": {
+          "type": "string"
+        },
+        "fallbackUsed": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
