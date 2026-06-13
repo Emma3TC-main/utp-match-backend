@@ -1,6 +1,6 @@
 ﻿import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -9,12 +9,7 @@ function requiredEnv(name: string): string {
     throw new Error(`Falta configurar la variable de entorno: ${name}`);
   }
 
-  if (
-    value.includes("PEGAR_") ||
-    value.includes("TU_") ||
-    value.includes("PENDIENTE") ||
-    value.includes("REEMPLAZAR")
-  ) {
+  if (isPlaceholderValue(value)) {
     throw new Error(`La variable ${name} todavía tiene un valor temporal`);
   }
 
@@ -35,6 +30,41 @@ function booleanEnv(name: string, defaultValue: boolean): boolean {
   return value.toLowerCase() === "true";
 }
 
+function numberEnv(name: string, defaultValue: number): number {
+  const value = process.env[name];
+
+  if (!value) {
+    return defaultValue;
+  }
+
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? defaultValue : parsed;
+}
+
+function isPlaceholderValue(value: string): boolean {
+  const normalized = value.trim().toUpperCase();
+
+  return (
+    normalized === "" ||
+    normalized.includes("PEGAR_") ||
+    normalized.includes("TU_") ||
+    normalized.includes("PENDIENTE") ||
+    normalized.includes("REEMPLAZAR") ||
+    normalized.includes("CONFIGURAR")
+  );
+}
+
+function isConfiguredSecret(value: string): boolean {
+  return Boolean(value && !isPlaceholderValue(value));
+}
+
+const databaseEnabled = booleanEnv("DATABASE_ENABLED", false);
+const aiEnabled = booleanEnv("AI_ENABLED", false);
+const aiProvider = optionalEnv("AI_PROVIDER", "mock");
+
+const rawGeminiApiKey = optionalEnv("GEMINI_API_KEY", "");
+const geminiApiKeyConfigured = isConfiguredSecret(rawGeminiApiKey);
+
 export const env = {
   port: Number(optionalEnv("PORT", "3000")),
   nodeEnv: optionalEnv("NODE_ENV", "development"),
@@ -43,22 +73,27 @@ export const env = {
   supabaseUrl: requiredEnv("SUPABASE_URL"),
   supabaseAnonKey: requiredEnv("SUPABASE_ANON_KEY"),
 
-  databaseEnabled: booleanEnv("DATABASE_ENABLED", false),
-  databaseUrl: booleanEnv("DATABASE_ENABLED", false)
+  databaseEnabled,
+  databaseUrl: databaseEnabled
     ? requiredEnv("DATABASE_URL")
     : optionalEnv("DATABASE_URL", ""),
 
   jwtSecret: requiredEnv("JWT_SECRET"),
 
-  chatlyEnabled: booleanEnv("CHATLY_ENABLED", false),
-  chatlyApiKey: booleanEnv("CHATLY_ENABLED", false)
-    ? requiredEnv("CHATLY_API_KEY")
-    : optionalEnv("CHATLY_API_KEY", ""),
+  aiEnabled,
+  aiProvider,
+  aiModel: optionalEnv("AI_MODEL", "gemini-3.1-flash-lite"),
+  aiFallbackProvider: optionalEnv("AI_FALLBACK_PROVIDER", "mock"),
 
-  chatlyBaseUrl: optionalEnv("CHATLY_BASE_URL", "https://api.chatly.ai"),
-  chatlyModel: optionalEnv("CHATLY_MODEL", "deepseek"),
+  geminiApiKey: aiEnabled && aiProvider === "gemini"
+    ? requiredEnv("GEMINI_API_KEY")
+    : rawGeminiApiKey,
+
+  geminiApiKeyConfigured,
+  geminiTimeoutMs: numberEnv("GEMINI_TIMEOUT_MS", 20000),
 
   frontendUrl: optionalEnv("FRONTEND_URL", "http://localhost:5173"),
   mobileUrl: optionalEnv("MOBILE_URL", "http://localhost:8081"),
   corsOrigin: optionalEnv("CORS_ORIGIN", "http://localhost:5173")
 };
+

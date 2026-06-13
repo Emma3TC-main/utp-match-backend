@@ -11,7 +11,9 @@ healthRoutes.get("/", (_req, res) => {
     service: "utp-match-backend",
     environment: env.nodeEnv,
     databaseEnabled: env.databaseEnabled,
-    chatlyEnabled: env.chatlyEnabled
+    aiEnabled: env.aiEnabled,
+    aiProvider: env.aiProvider,
+    aiModel: env.aiModel
   });
 });
 
@@ -38,11 +40,13 @@ healthRoutes.get("/db", async (_req, res) => {
 
 healthRoutes.get("/ai", (_req, res) => {
   return ok(res, {
-    chatlyEnabled: env.chatlyEnabled,
-    provider: "Chatly AI / DeepSeek",
-    model: env.chatlyModel,
-    message: env.chatlyEnabled
-      ? "Chatly está habilitado."
-      : "Chatly está desactivado temporalmente hasta configurar CHATLY_API_KEY."
+    aiEnabled: env.aiEnabled,
+    provider: env.aiProvider,
+    model: env.aiModel,
+    fallbackProvider: env.aiFallbackProvider,
+    geminiApiKeyConfigured: env.geminiApiKeyConfigured,
+    message: env.aiEnabled
+      ? "Proveedor IA habilitado."
+      : "IA desactivada temporalmente. Se usará fallback mock para demo."
   });
 });

@@ -1,48 +1,33 @@
-﻿# Cambios pendientes cuando tengamos Supabase y Chatly
+﻿# Documento reemplazado
 
-## Supabase
+Este documento quedó reemplazado por la configuración actual de Supabase y Gemini.
 
-Actualmente:
+## Estado actualizado
 
-DATABASE_ENABLED=false
+- Supabase/PostgreSQL ya está conectado.
+- Gemini quedó como proveedor IA principal.
+- El fallback mock queda disponible para demo.
+- La prueba real contra Gemini ya fue validada mediante POST /v1/ai/test.
 
-Cuando el dueño del Supabase comparta la URI correcta:
+## Documentos actuales
 
-DATABASE_ENABLED=true
-DATABASE_URL=URI_OFICIAL_DE_SUPABASE
+docs/setup/00_ESTADO_ACTUAL_LOCAL.md
+docs/ai/AI_PROVIDER_GEMINI_MVP.md
+docs/api/REQUESTS_LOCALES_THUNDER.md
+src/modules/ai/README.md
+src/modules/health/README.md
+src/db/README.md
 
-Archivos relacionados:
+## Seguridad
 
-src/config/env.ts
-src/db/pool.ts
-.env
+No colocar claves reales en documentación.
 
-Probar:
+No versionar .env.
 
-GET http://localhost:3000/v1/health/db
+Variables sensibles:
 
-## Chatly AI
-
-Actualmente:
-
-CHATLY_ENABLED=false
-CHATLY_API_KEY=PENDIENTE_CONFIGURAR
-
-Cuando tengamos la API Key:
-
-CHATLY_ENABLED=true
-CHATLY_API_KEY=KEY_REAL
-
-Archivos relacionados:
-
-src/config/env.ts
-src/modules/ai
-.env
-
-Probar:
-
-GET http://localhost:3000/v1/health/ai
-
-## Importante
-
-No compartir públicamente DATABASE_URL, JWT_SECRET, CHATLY_API_KEY ni password de Supabase.
+- DATABASE_URL
+- JWT_SECRET
+- GEMINI_API_KEY
+- Contraseñas de Supabase
+- Tokens

@@ -14,39 +14,60 @@ http://localhost:3000/v1
 
 ## Configuración local actual
 
-Por ahora el backend puede funcionar sin Supabase ni Chatly usando:
+El backend quedó actualizado con:
 
-DATABASE_ENABLED=false
-CHATLY_ENABLED=false
+- Supabase/PostgreSQL conectado.
+- Gemini configurado como proveedor IA principal.
+- Fallback mock preparado para demo.
+- Healthchecks funcionando.
+- Endpoint de prueba real contra Gemini funcionando.
+- Variables sensibles fuera de Git.
 
-Esto permite avanzar endpoints, módulos, documentación y pruebas locales sin depender todavía de servicios externos.
-
-## Qué cambiar cuando tengamos Supabase correcto
-
-Editar el archivo .env en la raíz del backend:
+## Variables principales
 
 DATABASE_ENABLED=true
-DATABASE_URL=URI_OFICIAL_DE_SUPABASE
+AI_ENABLED=true
+AI_PROVIDER=gemini
+AI_MODEL=gemini-3.1-flash-lite
+AI_FALLBACK_PROVIDER=mock
+GEMINI_TIMEOUT_MS=20000
 
-Luego reiniciar:
+## Rutas principales
 
-npm run dev
-
-Y probar:
-
+GET http://localhost:3000/v1/health
 GET http://localhost:3000/v1/health/db
-
-## Qué cambiar cuando tengamos Chatly API Key
-
-Editar el archivo .env:
-
-CHATLY_ENABLED=true
-CHATLY_API_KEY=KEY_REAL_DE_CHATLY
-
-Luego probar:
-
 GET http://localhost:3000/v1/health/ai
+GET http://localhost:3000/v1/ai/status
+POST http://localhost:3000/v1/ai/test
 
-## Regla de seguridad
+## Prueba real de Gemini
 
-No colocar valores reales de .env, DATABASE_URL, JWT_SECRET, CHATLY_API_KEY ni contraseñas dentro de archivos .md.
+Endpoint:
+
+POST http://localhost:3000/v1/ai/test
+
+Body JSON:
+
+{
+  "prompt": "Responde solo con OK si Gemini está funcionando."
+}
+
+Respuesta esperada:
+
+{
+  "success": true,
+  "data": {
+    "provider": "gemini",
+    "model": "gemini-3.1-flash-lite",
+    "generatedText": "OK"
+  },
+  "meta": {}
+}
+
+## Seguridad
+
+No colocar valores reales de .env, DATABASE_URL, JWT_SECRET, GEMINI_API_KEY ni contraseñas dentro de archivos .md.
+
+El archivo .env no debe subirse al repositorio.
+
+El archivo .env.example solo debe contener placeholders.
