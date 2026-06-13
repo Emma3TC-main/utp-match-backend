@@ -4,6 +4,7 @@ import { ok } from "./shared/responses/api-response";
 import { healthRoutes } from "./modules/health/health.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { profilesRoutes } from "./modules/profiles/profiles.routes";
+import { consentsRoutes } from "./modules/consents/consents.routes";
 import { careersRoutes } from "./modules/careers/careers.routes";
 import { vocationalReportsRoutes } from "./modules/vocational-reports/vocational-reports.routes";
 import { comparisonsRoutes } from "./modules/comparisons/comparisons.routes";
@@ -29,6 +30,7 @@ apiRouter.get("/modules", (_req, res) => {
     "health",
     "auth",
     "profiles",
+    "consents",
     "careers",
     "vocational-reports",
     "comparisons",
@@ -44,6 +46,7 @@ apiRouter.get("/modules", (_req, res) => {
 apiRouter.use("/health", healthRoutes);
 apiRouter.use("/auth", authRoutes);
 apiRouter.use("/profiles", profilesRoutes);
+apiRouter.use("/consents", consentsRoutes);
 apiRouter.use("/careers", careersRoutes);
 apiRouter.use("/vocational-reports", vocationalReportsRoutes);
 apiRouter.use("/comparisons", comparisonsRoutes);
