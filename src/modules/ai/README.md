@@ -1,52 +1,54 @@
-﻿# Documentación de carpeta
+﻿# Módulo AI
 
-## Estado actual
+## Responsabilidad
 
-Esta carpeta forma parte del backend local de UTP Match.
+Este módulo centraliza la configuración y prueba del proveedor IA del backend.
 
-El backend ya puede ejecutarse localmente con:
+Proveedor actual: Gemini
 
-npm run dev
+Modelo actual para MVP: gemini-3.1-flash-lite
 
-Base local:
+## Variables relacionadas
 
-http://localhost:3000/v1
+AI_ENABLED=true
+AI_PROVIDER=gemini
+AI_MODEL=gemini-3.1-flash-lite
+AI_FALLBACK_PROVIDER=mock
+GEMINI_API_KEY=valor_local_no_versionado
+GEMINI_TIMEOUT_MS=20000
 
-## Configuración local actual
+## Endpoints actuales
 
-Por ahora el backend puede funcionar sin Supabase ni Chatly usando:
+GET /v1/ai/status
+POST /v1/ai/test
 
-DATABASE_ENABLED=false
-CHATLY_ENABLED=false
+## Test real Gemini
 
-Esto permite avanzar endpoints, módulos, documentación y pruebas locales sin depender todavía de servicios externos.
+POST http://localhost:3000/v1/ai/test
 
-## Qué cambiar cuando tengamos Supabase correcto
+Body JSON:
 
-Editar el archivo .env en la raíz del backend:
+{
+  "prompt": "Responde solo con OK si Gemini está funcionando."
+}
 
-DATABASE_ENABLED=true
-DATABASE_URL=URI_OFICIAL_DE_SUPABASE
+## Siguiente evolución
 
-Luego reiniciar:
+Separar la lógica en:
 
-npm run dev
+src/modules/ai/gemini.provider.ts
+src/modules/ai/mock.provider.ts
+src/modules/ai/ai.service.ts
+src/modules/ai/schemas
 
-Y probar:
+Luego conectar Gemini a:
 
-GET http://localhost:3000/v1/health/db
+POST /v1/syllabi/{syllabusId}/explanations
+POST /v1/comparisons
+POST /v1/plans
 
-## Qué cambiar cuando tengamos Chatly API Key
+## Seguridad
 
-Editar el archivo .env:
+La API Key de Gemini solo vive en .env.
 
-CHATLY_ENABLED=true
-CHATLY_API_KEY=KEY_REAL_DE_CHATLY
-
-Luego probar:
-
-GET http://localhost:3000/v1/health/ai
-
-## Regla de seguridad
-
-No colocar valores reales de .env, DATABASE_URL, JWT_SECRET, CHATLY_API_KEY ni contraseñas dentro de archivos .md.
+Nunca debe enviarse al frontend ni subirse al repositorio.

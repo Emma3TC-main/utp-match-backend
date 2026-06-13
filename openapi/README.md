@@ -1,52 +1,33 @@
-﻿# Documentación de carpeta
+﻿# OpenAPI
 
-## Estado actual
+## Archivo principal
 
-Esta carpeta forma parte del backend local de UTP Match.
+openapi/utp_match_openapi.yaml
 
-El backend ya puede ejecutarse localmente con:
+## Estado
 
-npm run dev
+El contrato OpenAPI fue actualizado para reflejar el entorno actual del backend:
 
-Base local:
+- Supabase/PostgreSQL.
+- AI Provider Adapter.
+- Gemini como proveedor principal para el MVP.
+- Fallback mock.
+- Healthchecks de base de datos e IA.
 
-http://localhost:3000/v1
+## Endpoints relevantes
 
-## Configuración local actual
+GET /health
+GET /health/db
+GET /health/ai
+GET /ai/status
+POST /ai/test
 
-Por ahora el backend puede funcionar sin Supabase ni Chatly usando:
+## Modelo IA documentado
 
-DATABASE_ENABLED=false
-CHATLY_ENABLED=false
+gemini-3.1-flash-lite
 
-Esto permite avanzar endpoints, módulos, documentación y pruebas locales sin depender todavía de servicios externos.
+## Regla
 
-## Qué cambiar cuando tengamos Supabase correcto
+El OpenAPI documenta el contrato REST del backend.
 
-Editar el archivo .env en la raíz del backend:
-
-DATABASE_ENABLED=true
-DATABASE_URL=URI_OFICIAL_DE_SUPABASE
-
-Luego reiniciar:
-
-npm run dev
-
-Y probar:
-
-GET http://localhost:3000/v1/health/db
-
-## Qué cambiar cuando tengamos Chatly API Key
-
-Editar el archivo .env:
-
-CHATLY_ENABLED=true
-CHATLY_API_KEY=KEY_REAL_DE_CHATLY
-
-Luego probar:
-
-GET http://localhost:3000/v1/health/ai
-
-## Regla de seguridad
-
-No colocar valores reales de .env, DATABASE_URL, JWT_SECRET, CHATLY_API_KEY ni contraseñas dentro de archivos .md.
+No debe incluir claves reales, tokens ni URLs privadas con credenciales.

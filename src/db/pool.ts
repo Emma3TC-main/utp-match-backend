@@ -8,8 +8,22 @@ type DatabaseHealth = {
   metadata?: {
     now?: string;
     database?: string;
+    host?: string;
+    ssl?: boolean;
   };
 };
+
+function getDatabaseHost(): string | undefined {
+  if (!env.databaseUrl) {
+    return undefined;
+  }
+
+  try {
+    return new URL(env.databaseUrl).hostname;
+  } catch {
+    return undefined;
+  }
+}
 
 function createPool(): Pool | null {
   if (!env.databaseEnabled) {
@@ -29,9 +43,14 @@ function createPool(): Pool | null {
 
 export const pool = createPool();
 
-export async function query<T = unknown>(sql: string, params: unknown[] = []): Promise<T[]> {
+export async function query<T = unknown>(
+  sql: string,
+  params: unknown[] = []
+): Promise<T[]> {
   if (!env.databaseEnabled || !pool) {
-    throw new Error("La base de datos está desactivada. Revisar DATABASE_ENABLED en .env.");
+    throw new Error(
+      "La base de datos está desactivada. Revisar DATABASE_ENABLED=true y DATABASE_URL en .env."
+    );
   }
 
   const result = await pool.query(sql, params);
@@ -43,7 +62,12 @@ export async function checkDatabaseConnection(): Promise<DatabaseHealth> {
     return {
       enabled: false,
       connected: false,
-      message: "Base de datos desactivada temporalmente. Configurar DATABASE_ENABLED=true cuando se tenga la URI correcta de Supabase."
+      message:
+        "Base de datos desactivada por configuración local. Para conectarla, usar DATABASE_ENABLED=true y DATABASE_URL en .env.",
+      metadata: {
+        host: getDatabaseHost(),
+        ssl: true
+      }
     };
   }
 
@@ -51,7 +75,12 @@ export async function checkDatabaseConnection(): Promise<DatabaseHealth> {
     return {
       enabled: true,
       connected: false,
-      message: "Pool de base de datos no inicializado."
+      message:
+        "Pool de base de datos no inicializado. Revisar DATABASE_URL en .env.",
+      metadata: {
+        host: getDatabaseHost(),
+        ssl: true
+      }
     };
   }
 
@@ -66,10 +95,12 @@ export async function checkDatabaseConnection(): Promise<DatabaseHealth> {
   return {
     enabled: true,
     connected: row?.ok === 1,
-    message: "Conexión a base de datos verificada.",
+    message: "Conexión a Supabase/PostgreSQL verificada.",
     metadata: {
       now: row?.now,
-      database: row?.database
+      database: row?.database,
+      host: getDatabaseHost(),
+      ssl: true
     }
   };
 }

@@ -1,52 +1,48 @@
-﻿# Documentación de carpeta
+﻿# Base de datos
 
-## Estado actual
+## Responsabilidad
 
-Esta carpeta forma parte del backend local de UTP Match.
+Esta carpeta centraliza la conexión del backend con Supabase/PostgreSQL.
 
-El backend ya puede ejecutarse localmente con:
+Archivo principal:
 
-npm run dev
+src/db/pool.ts
 
-Base local:
-
-http://localhost:3000/v1
-
-## Configuración local actual
-
-Por ahora el backend puede funcionar sin Supabase ni Chatly usando:
-
-DATABASE_ENABLED=false
-CHATLY_ENABLED=false
-
-Esto permite avanzar endpoints, módulos, documentación y pruebas locales sin depender todavía de servicios externos.
-
-## Qué cambiar cuando tengamos Supabase correcto
-
-Editar el archivo .env en la raíz del backend:
+## Variables requeridas
 
 DATABASE_ENABLED=true
-DATABASE_URL=URI_OFICIAL_DE_SUPABASE
+DATABASE_URL=valor_local_no_versionado
 
-Luego reiniciar:
-
-npm run dev
-
-Y probar:
+## Healthcheck
 
 GET http://localhost:3000/v1/health/db
 
-## Qué cambiar cuando tengamos Chatly API Key
+Respuesta esperada:
 
-Editar el archivo .env:
+{
+  "success": true,
+  "data": {
+    "databaseEnabled": true,
+    "database": "connected",
+    "message": "Conexión a Supabase/PostgreSQL verificada."
+  },
+  "meta": {}
+}
 
-CHATLY_ENABLED=true
-CHATLY_API_KEY=KEY_REAL_DE_CHATLY
+## Qué hace pool.ts
 
-Luego probar:
+- Crea el pool de PostgreSQL.
+- Lee DATABASE_URL desde src/config/env.ts.
+- Usa SSL para Supabase.
+- Ejecuta consultas mediante query().
+- Valida conexión mediante checkDatabaseConnection().
 
-GET http://localhost:3000/v1/health/ai
+## Qué NO debe hacer pool.ts
 
-## Regla de seguridad
+pool.ts no debe contener lógica de Gemini, IA, prompts, modelos ni API keys.
 
-No colocar valores reales de .env, DATABASE_URL, JWT_SECRET, CHATLY_API_KEY ni contraseñas dentro de archivos .md.
+Gemini pertenece al módulo src/modules/ai.
+
+## Seguridad
+
+No colocar la URL real de Supabase en este README ni en ningún archivo versionado.

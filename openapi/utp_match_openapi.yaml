@@ -1,14 +1,16 @@
-openapi: 3.1.0
+﻿openapi: 3.1.0
 info:
   title: UTP Match / SyllabusX API
   version: 1.0.0-mvp
-  description: REST-first API para exploración vocacional asistida, comparación de carreras, explicación de sílabos y planes de acción.
+  description: REST-first API para exploraciÃ³n vocacional asistida, comparaciÃ³n de carreras, explicaciÃ³n de sÃ­labos y planes de acciÃ³n.
 servers:
-  - url: https://api.utpmatch.local/v1
-    description: Local/staging example
+  - url: http://localhost:3000/v1
+    description: Backend local de desarrollo
 security:
   - bearerAuth: []
 tags:
+  - name: Health
+  - name: AI
   - name: Auth
   - name: Profiles
   - name: Careers
@@ -20,14 +22,62 @@ tags:
   - name: Shares
   - name: Events
 paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Verificar estado general del backend
+      security: []
+      responses:
+        '200':
+          description: Backend disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessHealthStatus'
+  /health/db:
+    get:
+      tags: [Health]
+      summary: Verificar conexión con Supabase/PostgreSQL
+      security: []
+      responses:
+        '200':
+          description: Estado de conexión a base de datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessDatabaseHealthStatus'
+  /health/ai:
+    get:
+      tags: [Health]
+      summary: Verificar configuración del proveedor IA
+      security: []
+      responses:
+        '200':
+          description: Estado del proveedor IA
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessAiStatus'
+  /ai/status:
+    get:
+      tags: [AI]
+      summary: Consultar proveedor IA configurado
+      security: []
+      responses:
+        '200':
+          description: Estado del AI Provider Adapter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessAiStatus'
   /auth/guest:
     post:
       tags: [Auth]
-      summary: Crear sesión temporal de invitado
+      summary: Crear sesiÃ³n temporal de invitado
       security: []
       responses:
         '201':
-          description: Sesión guest creada
+          description: SesiÃ³n guest creada
           content:
             application/json:
               schema:
@@ -164,7 +214,7 @@ paths:
   /comparisons:
     post:
       tags: [Comparisons]
-      summary: Generar comparación entre dos carreras
+      summary: Generar comparaciÃ³n entre dos carreras
       requestBody:
         required: true
         content:
@@ -179,7 +229,7 @@ paths:
               explanationStyle: clear_youthful
       responses:
         '201':
-          description: Comparación generada
+          description: ComparaciÃ³n generada
           content:
             application/json:
               schema: { $ref: '#/components/schemas/CareerComparisonResponse' }
@@ -187,7 +237,7 @@ paths:
   /comparisons/{comparisonId}:
     get:
       tags: [Comparisons]
-      summary: Consultar comparación guardada
+      summary: Consultar comparaciÃ³n guardada
       parameters:
         - in: path
           name: comparisonId
@@ -195,27 +245,27 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Comparación
+          description: ComparaciÃ³n
           content:
             application/json:
               schema: { $ref: '#/components/schemas/CareerComparisonResponse' }
   /syllabi/{syllabusId}:
     get:
       tags: [Syllabi]
-      summary: Obtener detalle de sílabo parseado
+      summary: Obtener detalle de sÃ­labo parseado
       security: []
       parameters:
         - $ref: '#/components/parameters/SyllabusId'
       responses:
         '200':
-          description: Sílabo
+          description: SÃ­labo
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SyllabusDetail' }
   /syllabi/{syllabusId}/explanations:
     post:
       tags: [Syllabi]
-      summary: Generar explicación de sílabo/curso con IA
+      summary: Generar explicaciÃ³n de sÃ­labo/curso con IA
       parameters:
         - $ref: '#/components/parameters/SyllabusId'
       requestBody:
@@ -225,14 +275,14 @@ paths:
             schema: { $ref: '#/components/schemas/SyllabusExplanationRequest' }
       responses:
         '200':
-          description: Explicación generada o cacheada
+          description: ExplicaciÃ³n generada o cacheada
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SyllabusExplanationResponse' }
   /plans:
     post:
       tags: [Plans]
-      summary: Crear plan de acción
+      summary: Crear plan de acciÃ³n
       requestBody:
         required: true
         content:
@@ -247,7 +297,7 @@ paths:
   /plans/{planId}:
     get:
       tags: [Plans]
-      summary: Consultar plan de acción
+      summary: Consultar plan de acciÃ³n
       parameters:
         - in: path
           name: planId
@@ -296,7 +346,7 @@ paths:
   /shares/{token}:
     get:
       tags: [Shares]
-      summary: Leer resumen público compartido
+      summary: Leer resumen pÃºblico compartido
       security: []
       parameters:
         - in: path
@@ -312,7 +362,7 @@ paths:
   /events:
     post:
       tags: [Events]
-      summary: Registrar evento analítico de producto
+      summary: Registrar evento analÃ­tico de producto
       requestBody:
         required: true
         content:
@@ -345,7 +395,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorResponse' }
     ValidationError:
-      description: Error de validación
+      description: Error de validaciÃ³n
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -638,12 +688,135 @@ components:
         requestId: { type: string }
     ModelMetadata:
       type: object
+      required: [provider, model, promptVersion, cacheHit, fallbackUsed]
       properties:
-        provider: { type: string, example: chatly_ai }
-        model: { type: string }
-        promptVersion: { type: string }
-        cacheHit: { type: boolean }
-        fallbackUsed: { type: boolean }
+        provider:
+          type: string
+          enum: [gemini, mock]
+          example: gemini
+        model:
+          type: string
+          example: gemini-3.1-flash-lite
+        promptVersion:
+          type: string
+          example: syllabus-explanation-v1
+        cacheHit:
+          type: boolean
+          example: false
+        fallbackUsed:
+          type: boolean
+          example: false
+        latencyMs:
+          type: integer
+          nullable: true
+          example: 1200
+        safetyNotes:
+          type: array
+          nullable: true
+          items:
+            type: string
+    ApiSuccessHealthStatus:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/HealthStatus'
+        meta:
+          type: object
+          additionalProperties: true
+    HealthStatus:
+      type: object
+      required: [status, service, environment, databaseEnabled, aiEnabled, aiProvider, aiModel]
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: utp-match-backend
+        environment:
+          type: string
+          example: development
+        databaseEnabled:
+          type: boolean
+          example: true
+        aiEnabled:
+          type: boolean
+          example: false
+        aiProvider:
+          type: string
+          example: gemini
+        aiModel:
+          type: string
+          example: gemini-3.1-flash-lite
+    ApiSuccessDatabaseHealthStatus:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/DatabaseHealthStatus'
+        meta:
+          type: object
+          additionalProperties: true
+    DatabaseHealthStatus:
+      type: object
+      required: [databaseEnabled, database, message]
+      properties:
+        databaseEnabled:
+          type: boolean
+          example: true
+        database:
+          type: string
+          enum: [connected, not_connected]
+          example: connected
+        message:
+          type: string
+          example: Conexión a base de datos verificada.
+        metadata:
+          type: object
+          additionalProperties: true
+    ApiSuccessAiStatus:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/AiStatus'
+        meta:
+          type: object
+          additionalProperties: true
+    AiStatus:
+      type: object
+      required: [enabled, provider, model, fallbackProvider, geminiApiKeyConfigured, message]
+      properties:
+        enabled:
+          type: boolean
+          example: false
+        provider:
+          type: string
+          enum: [gemini, mock]
+          example: gemini
+        model:
+          type: string
+          example: gemini-3.1-flash-lite
+        fallbackProvider:
+          type: string
+          enum: [mock]
+          example: mock
+        geminiApiKeyConfigured:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: AI Provider desactivado. El MVP puede usar fallback mock.
     ErrorResponse:
       type: object
       required: [error]
@@ -655,3 +828,4 @@ components:
             code: { type: string }
             message: { type: string }
             details: { type: object, additionalProperties: true }
+

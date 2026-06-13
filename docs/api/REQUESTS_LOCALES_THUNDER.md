@@ -1,47 +1,53 @@
-﻿# Requests locales para probar backend
+﻿# Requests locales para Thunder Client
 
-Base URL:
+## Base URL
 
-http://localhost:3000
+http://localhost:3000/v1
 
-## Sin token
+## Health general
 
-GET http://localhost:3000/v1
-GET http://localhost:3000/v1/modules
 GET http://localhost:3000/v1/health
+
+## Health de base de datos
+
 GET http://localhost:3000/v1/health/db
+
+## Health IA
+
 GET http://localhost:3000/v1/health/ai
-GET http://localhost:3000/v1/careers
-GET http://localhost:3000/v1/careers/software-engineering
-GET http://localhost:3000/v1/careers/software-engineering/curriculum
-GET http://localhost:3000/v1/syllabi/demo-syllabus-1
-GET http://localhost:3000/v1/admin/status
+
+## Status IA
+
 GET http://localhost:3000/v1/ai/status
 
-## Crear invitado
+## Test real Gemini
 
-POST http://localhost:3000/v1/auth/guest
-
-Body:
-
-{
-  "displayName": "Sebas"
-}
-
-## Con token
+POST http://localhost:3000/v1/ai/test
 
 Header:
 
-Authorization: Bearer TU_ACCESS_TOKEN
 Content-Type: application/json
 
-GET http://localhost:3000/v1/auth/me
-GET http://localhost:3000/v1/profiles/me
-PATCH http://localhost:3000/v1/profiles/me
-POST http://localhost:3000/v1/vocational-reports
-GET http://localhost:3000/v1/vocational-reports/latest
-POST http://localhost:3000/v1/comparisons
-POST http://localhost:3000/v1/syllabi/demo-syllabus-1/explain
-POST http://localhost:3000/v1/plans
-GET http://localhost:3000/v1/plans/mock-plan-1
-POST http://localhost:3000/v1/shares
+Body JSON:
+
+{
+  "prompt": "Responde solo con OK si Gemini está funcionando."
+}
+
+Respuesta esperada:
+
+{
+  "success": true,
+  "data": {
+    "provider": "gemini",
+    "model": "gemini-3.1-flash-lite",
+    "generatedText": "OK"
+  },
+  "meta": {}
+}
+
+## Nota
+
+Este endpoint prueba una llamada real desde el backend hacia Gemini.
+
+No se debe exponer GEMINI_API_KEY al frontend.
