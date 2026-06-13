@@ -1,28 +1,30 @@
 ﻿import { Router } from "express";
-import { ok } from "../../shared/responses/api-response";
-import { requireAuth, AuthenticatedRequest } from "../../middlewares/auth.middleware";
+import { asyncHandler } from "../../shared/http/async-handler";
+import { validateRequest } from "../../shared/validation/validate-request";
+import { ComparisonsController } from "./comparisons.controller";
+import {
+  careerComparisonRequestSchema,
+  comparisonIdParamsSchema
+} from "./dto/comparison.dto";
 
-export const comparisonsRoutes = Router();
+const router = Router();
+const controller = new ComparisonsController();
 
-comparisonsRoutes.post("/", requireAuth, (req: AuthenticatedRequest, res) => {
-  return ok(res, {
-    message: "Comparación generada en modo mock",
-    userId: req.user?.sub,
-    input: req.body,
-    comparison: {
-      summary: "Ingeniería de Software se alinea mejor si el alumno disfruta crear soluciones tecnológicas.",
-      criteria: [
-        {
-          name: "Afinidad vocacional",
-          winner: "software-engineering",
-          reason: "Mayor relación con tecnología, resolución de problemas y creación digital."
-        },
-        {
-          name: "Empleabilidad",
-          winner: "software-engineering",
-          reason: "Alta demanda en desarrollo, cloud, datos e IA."
-        }
-      ]
-    }
-  });
-});
+router.post(
+  "/",
+  validateRequest({
+    body: careerComparisonRequestSchema
+  }),
+  asyncHandler(controller.createComparison)
+);
+
+router.get(
+  "/:comparisonId",
+  validateRequest({
+    params: comparisonIdParamsSchema
+  }),
+  asyncHandler(controller.getComparison)
+);
+
+export const comparisonsRoutes = router;
+export default router;

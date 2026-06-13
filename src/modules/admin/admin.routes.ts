@@ -6,7 +6,7 @@ export const adminRoutes = Router();
 adminRoutes.get("/status", (_req, res) => {
   return ok(res, {
     module: "admin",
-    status: "available_mock",
-    message: "Módulo admin pendiente de proteger con rol admin"
+    status: "ready",
+    mode: "stub"
   });
 });
