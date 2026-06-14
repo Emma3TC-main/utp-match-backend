@@ -1,4 +1,4 @@
-﻿# Thunder Client - Pruebas MVP Local
+# Thunder Client - Guia MVP Local
 
 Base URL:
 
@@ -10,57 +10,105 @@ GET http://localhost:3000/v1/health
 GET http://localhost:3000/v1/health/db
 GET http://localhost:3000/v1/health/ai
 
-## 2. AI Test
+## 2. Auth guest session
 
-POST http://localhost:3000/v1/ai/test
+POST http://localhost:3000/v1/auth/guest-session
 
 Body JSON:
 
 {
-  "prompt": "Responde solo con OK si Gemini está funcionando."
+  "displayName": "Sebas Demo",
+  "source": "thunder-client",
+  "metadata": {
+    "flow": "local-test",
+    "screen": "onboarding"
+  }
 }
 
-Respuesta esperada:
+Copiar:
 
-success true y generatedText OK.
+data.session.accessToken
 
-## 3. AI Ask con contexto
+Probar sesion:
 
-POST http://localhost:3000/v1/ai/ask
+GET http://localhost:3000/v1/auth/me
+
+Header:
+
+Authorization: Bearer PEGAR_ACCESS_TOKEN
+
+Logout:
+
+POST http://localhost:3000/v1/auth/logout
+
+Header:
+
+Authorization: Bearer PEGAR_ACCESS_TOKEN
+
+Body JSON:
+
+{}
+
+## 3. Profiles
+
+Ver perfil demo:
+
+GET http://localhost:3000/v1/profiles/me
+
+Crear perfil:
+
+POST http://localhost:3000/v1/profiles
 
 Body JSON:
 
 {
-  "question": "Estoy entre Ingeniería de Software e Ingeniería Industrial. Me gusta la tecnología, pero también organizar procesos. ¿Qué debería explorar primero?",
-  "careerIds": [
-    "software-engineering",
-    "industrial-engineering"
+  "userId": "user-local-001",
+  "firstName": "Sebas Demo",
+  "schoolYear": "5_secundaria",
+  "campusInterest": "Lima Centro",
+  "ageBand": "16_17",
+  "preferredLanguage": "es-PE",
+  "familyShareEnabled": true,
+  "interests": [
+    "tecnologia",
+    "datos",
+    "crear aplicaciones"
   ],
+  "strengths": [
+    "pensamiento logico",
+    "curiosidad",
+    "persistencia"
+  ],
+  "concerns": [
+    "matematica",
+    "no conocer la malla real"
+  ],
+  "source": "thunder-client",
+  "metadata": {
+    "flow": "local-test",
+    "screen": "profile-onboarding"
+  }
+}
+
+## 4. Consents
+
+GET http://localhost:3000/v1/consents/requirements
+
+POST http://localhost:3000/v1/consents
+
+Body JSON:
+
+{
   "studentProfileId": "profile-demo-001",
-  "maxContextItems": 8
+  "consentType": "ai_processing",
+  "version": "2026-06-v1",
+  "granted": true,
+  "source": "comparison_flow",
+  "metadata": {
+    "screen": "career-comparison",
+    "flow": "local-test"
+  }
 }
-
-Debe responder usando información de:
-
-src/modules/ai/knowledge/utp-match.knowledge.json
-
-## 4. AI Ask fuera de contexto
-
-POST http://localhost:3000/v1/ai/ask
-
-Body JSON:
-
-{
-  "question": "¿Cuál es la mensualidad exacta de Ingeniería de Software este año?",
-  "careerIds": [
-    "software-engineering"
-  ],
-  "maxContextItems": 6
-}
-
-Resultado esperado:
-
-La IA debe indicar que no tiene información suficiente sobre mensualidades exactas y recomendar revisar canales oficiales o hablar con un asesor.
 
 ## 5. Careers
 
@@ -68,7 +116,77 @@ GET http://localhost:3000/v1/careers
 GET http://localhost:3000/v1/careers/software-engineering
 GET http://localhost:3000/v1/careers/software-engineering/curriculum
 
-## 6. Comparisons
+## 6. Vocational Reports
+
+POST http://localhost:3000/v1/vocational-reports
+
+Body JSON:
+
+{
+  "studentProfileId": "profile-demo-001",
+  "sourceType": "mock_demo",
+  "reportDate": "2026-06-13",
+  "topCareers": [
+    {
+      "careerId": "software-engineering",
+      "name": "Ingenieria de Software",
+      "score": 92,
+      "confidence": 88,
+      "reason": "Alta afinidad con tecnologia, logica, creacion digital y resolucion de problemas.",
+      "tags": ["tecnologia", "programacion", "proyectos"]
+    },
+    {
+      "careerId": "data-science",
+      "name": "Ciencia de Datos",
+      "score": 84,
+      "confidence": 80,
+      "reason": "Interes en datos, patrones, IA y analisis.",
+      "tags": ["datos", "ia", "analitica"]
+    },
+    {
+      "careerId": "industrial-engineering",
+      "name": "Ingenieria Industrial",
+      "score": 76,
+      "confidence": 72,
+      "reason": "Afinidad media con procesos, organizacion y mejora continua.",
+      "tags": ["procesos", "gestion"]
+    }
+  ],
+  "scores": {
+    "technology": 92,
+    "logic": 90,
+    "communication": 68,
+    "management": 74,
+    "creativity": 80
+  },
+  "interests": [
+    "crear aplicaciones",
+    "inteligencia artificial",
+    "resolver problemas"
+  ],
+  "strengths": [
+    "pensamiento logico",
+    "curiosidad tecnologica",
+    "aprendizaje autonomo"
+  ],
+  "concerns": [
+    "miedo a la matematica",
+    "no conocer como seran los primeros ciclos"
+  ],
+  "context": {
+    "source": "thunder-client-local-test"
+  }
+}
+
+Copiar:
+
+data.report.id
+
+Recomendaciones:
+
+GET http://localhost:3000/v1/vocational-reports/PEGAR_REPORT_ID/recommendations
+
+## 7. Comparisons
 
 POST http://localhost:3000/v1/comparisons
 
@@ -87,18 +205,20 @@ Body JSON:
   }
 }
 
-Luego copiar:
+Copiar:
 
 data.comparison.comparisonId
 
-Y probar:
+Luego:
 
 GET http://localhost:3000/v1/comparisons/PEGAR_COMPARISON_ID
 
-## 7. Syllabi
+## 8. Syllabi
 
 GET http://localhost:3000/v1/syllabi
 GET http://localhost:3000/v1/syllabi/syl-soft-prog-1
+
+Explicacion:
 
 POST http://localhost:3000/v1/syllabi/syl-soft-prog-1/explanations
 
@@ -116,7 +236,7 @@ Body JSON:
   }
 }
 
-## 8. Plans
+## 9. Plans
 
 POST http://localhost:3000/v1/plans
 
@@ -129,14 +249,14 @@ Body JSON:
   "targetTerm": "2026-2",
   "tasks": [
     {
-      "title": "Revisar Fundamentos de Programación",
-      "description": "Leer la explicación del sílabo y marcar dudas.",
+      "title": "Revisar Fundamentos de Programacion",
+      "description": "Leer la explicacion del silabo y marcar dudas.",
       "type": "review_syllabus",
       "relatedSyllabusId": "syl-soft-prog-1"
     },
     {
       "title": "Hablar con mi familia",
-      "description": "Compartir por qué esta carrera encaja conmigo.",
+      "description": "Compartir por que esta carrera encaja conmigo.",
       "type": "talk_family"
     }
   ],
@@ -161,7 +281,7 @@ Body JSON:
   "status": "done"
 }
 
-## 9. Shares
+## 10. Shares
 
 POST http://localhost:3000/v1/shares
 
@@ -173,7 +293,7 @@ Body JSON:
   "planId": "plan-demo-001",
   "audience": "family",
   "title": "Resumen vocacional para mi familia",
-  "summary": "Este resumen explica por qué estoy comparando Ingeniería de Software e Ingeniería Industrial y qué pasos seguiré para decidir mejor.",
+  "summary": "Este resumen explica por que estoy comparando Ingenieria de Software e Ingenieria Industrial y que pasos seguire para decidir mejor.",
   "expiresAt": null,
   "metadata": {
     "source": "thunder-client-local-test",
@@ -184,6 +304,7 @@ Body JSON:
 Copiar:
 
 data.share.token
+data.share.shareUrl
 
 Abrir resumen:
 
@@ -196,12 +317,107 @@ PATCH http://localhost:3000/v1/shares/PEGAR_TOKEN/revoke
 Body JSON:
 
 {
-  "reason": "El estudiante decidió dejar de compartir este resumen."
+  "reason": "El estudiante decidio dejar de compartir este resumen."
 }
 
-## 10. Validación esperada
+## 11. Events
 
-Cuando un body no cumple el DTO, el backend devuelve:
+POST http://localhost:3000/v1/events
+
+Body JSON:
+
+{
+  "eventName": "comparison_created",
+  "studentProfileId": "profile-demo-001",
+  "sessionId": "session-local-001",
+  "source": "thunder-client",
+  "eventProps": {
+    "comparisonId": "comparison-demo-001",
+    "leftCareerId": "software-engineering",
+    "rightCareerId": "industrial-engineering",
+    "screen": "career-comparison"
+  },
+  "requestId": "req-local-001"
+}
+
+Copiar:
+
+data.event.id
+
+Luego:
+
+GET http://localhost:3000/v1/events/PEGAR_EVENT_ID
+
+## 12. Admin
+
+GET http://localhost:3000/v1/admin/status
+GET http://localhost:3000/v1/admin/catalog/overview
+
+Crear carrera admin:
+
+POST http://localhost:3000/v1/admin/catalog/careers
+
+Body JSON:
+
+{
+  "id": "cybersecurity",
+  "utpCode": "UTP-CYBER",
+  "name": "Ingenieria de Ciberseguridad",
+  "faculty": "Ingenieria",
+  "studyMode": "Presencial / Semipresencial",
+  "shortDescription": "Carrera orientada a proteger sistemas, redes, datos y servicios digitales.",
+  "valueProposition": "Ideal para estudiantes interesados en seguridad digital, investigacion, redes y proteccion de informacion.",
+  "tags": ["tecnologia", "seguridad", "redes", "datos"],
+  "status": "draft"
+}
+
+Auditoria:
+
+GET http://localhost:3000/v1/admin/audit-summary
+
+## 13. AI
+
+Prueba Gemini:
+
+POST http://localhost:3000/v1/ai/test
+
+Body JSON:
+
+{
+  "prompt": "Responde solo con OK si Gemini esta funcionando."
+}
+
+Pregunta con contexto:
+
+POST http://localhost:3000/v1/ai/ask
+
+Body JSON:
+
+{
+  "question": "Estoy entre Ingenieria de Software e Ingenieria Industrial. Me gusta la tecnologia, pero tambien organizar procesos. Que deberia explorar primero?",
+  "careerIds": [
+    "software-engineering",
+    "industrial-engineering"
+  ],
+  "studentProfileId": "profile-demo-001",
+  "maxContextItems": 8
+}
+
+Pregunta fuera de contexto:
+
+{
+  "question": "Cual es la mensualidad exacta de Ingenieria de Software este ano?",
+  "careerIds": [
+    "software-engineering"
+  ],
+  "maxContextItems": 6
+}
+
+La respuesta esperada debe decir que no hay informacion suficiente sobre mensualidades exactas.
+
+## Validacion esperada
+
+Cuando el body no cumple el DTO:
 
 {
   "success": false,
@@ -209,3 +425,7 @@ Cuando un body no cumple el DTO, el backend devuelve:
     "code": "BODY_VALIDATION_ERROR"
   }
 }
+
+## Nota importante
+
+Los IDs creados en runtime solo existen mientras npm run dev siga ejecutandose. Si se reinicia el backend, crear nuevamente los registros.

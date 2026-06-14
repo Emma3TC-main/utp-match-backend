@@ -1,4 +1,4 @@
-﻿# IA con conocimiento estático - UTP Match / SyllabusX
+# IA con conocimiento estatico - UTP Match / SyllabusX
 
 El endpoint:
 
@@ -8,9 +8,22 @@ usa Gemini con contexto inyectado desde:
 
 src/modules/ai/knowledge/utp-match.knowledge.json
 
-## Por qué usamos JSON estático
+## Estado actual
 
-Para el MVP de hackathon y por límites de uso del modelo gratuito, el backend no conecta todavía Gemini directamente con todos los módulos ni con la base de datos.
+La API de Gemini ya esta conectada y probada desde:
+
+POST /v1/ai/test
+
+Respuesta esperada:
+
+success true
+provider gemini
+model gemini-3.1-flash-lite
+generatedText OK
+
+## Por que usamos JSON estatico
+
+Para el MVP de hackathon y por limites de uso del modelo gratuito, el backend no conecta todavia Gemini directamente con todos los modulos ni con la base de datos.
 
 En esta etapa, el JSON funciona como base de conocimiento controlada.
 
@@ -24,47 +37,78 @@ Frontend / Thunder Client
 -> Gemini genera respuesta
 -> Backend devuelve answer + usedContext
 
-## Qué contiene el JSON
+## Que contiene el JSON
 
-- Propósito del producto.
+- Proposito del producto.
 - Reglas de respuesta.
 - Carreras disponibles.
-- Sílabos disponibles.
-- Señales de dificultad.
-- Recomendaciones de preparación.
+- Silabos disponibles.
+- Senales de dificultad.
+- Recomendaciones de preparacion.
 - Retos o advertencias por carrera.
 
-## Qué no hace
+## Que no hace
 
 Gemini no se entrena permanentemente con estos datos.
 
-Cada request manda el contexto necesario en el prompt. Si el contexto no contiene una respuesta, la IA debe indicar que no tiene información suficiente.
+Cada request manda el contexto necesario en el prompt. Si el contexto no contiene una respuesta, la IA debe indicar que no tiene informacion suficiente.
 
-## Prueba recomendada
+## Pruebas realizadas
 
-POST /v1/ai/ask
-
-Body JSON:
+### Comparacion de carreras
 
 {
-  "question": "¿Cuál es la mensualidad exacta de Ingeniería de Software este año?",
+  "question": "Estoy entre Ingenieria de Software e Ingenieria Industrial. Me gusta la tecnologia, pero tambien organizar procesos. Que deberia explorar primero?",
+  "careerIds": [
+    "software-engineering",
+    "industrial-engineering"
+  ],
+  "studentProfileId": "profile-demo-001",
+  "maxContextItems": 8
+}
+
+Resultado esperado:
+
+- Debe comparar ambas carreras.
+- Debe mencionar tecnologia, creacion, procesos y organizacion.
+- Debe cerrar con un siguiente paso practico.
+
+### Pregunta fuera de contexto
+
+{
+  "question": "Cual es la mensualidad exacta de Ingenieria de Software este ano?",
   "careerIds": [
     "software-engineering"
   ],
   "maxContextItems": 6
 }
 
-La respuesta esperada debe indicar que no hay información suficiente sobre mensualidades exactas y sugerir revisar canales oficiales o hablar con un asesor.
+Resultado esperado:
 
-## Evolución posterior
+- Debe indicar que no tiene informacion suficiente sobre mensualidades exactas.
+- Debe sugerir revisar canales oficiales o hablar con un asesor.
+- No debe inventar costos.
+
+## Informacion que puede crecer en el JSON
+
+- Mas carreras UTP.
+- Mas silabos y cursos por ciclo.
+- Modalidades generales.
+- Becas como mensaje controlado.
+- Reglas para familia/tutor.
+- Preguntas frecuentes.
+- Glosario de terminos.
+- Mensajes de seguridad para evitar inventar informacion sensible.
+
+## Evolucion posterior
 
 Cuando el MVP crezca, el contexto puede venir de:
 
-- CareersService
-- SyllabiService
-- ProfilesService
-- VocationalReportsService
-- Supabase/PostgreSQL
-- Vector search o embeddings
+- CareersService.
+- SyllabiService.
+- ProfilesService.
+- VocationalReportsService.
+- Supabase/PostgreSQL.
+- Vector search o embeddings.
 
-Para el MVP actual, el JSON estático es suficiente y más controlable.
+Para el MVP actual, el JSON estatico es suficiente y mas controlable.

@@ -1,73 +1,51 @@
-﻿# Documentación de carpeta
+# UTP Match Backend - Documentacion
 
-## Estado actual
+Documentacion local del backend MVP.
 
-Esta carpeta forma parte del backend local de UTP Match.
+## Guias principales
 
-El backend ya puede ejecutarse localmente con:
+- docs/setup/README.md: configuracion local, Supabase, Gemini y comandos base.
+- docs/api/ENDPOINTS_MVP_LOCAL.md: resumen de endpoints MVP.
+- docs/api/THUNDER_CLIENT_MVP.md: guia de pruebas en Thunder Client.
+- docs/ai/AI_PROVIDER_GEMINI_MVP.md: configuracion de proveedor Gemini.
+- docs/ai/AI_KNOWLEDGE_STATIC_JSON.md: funcionamiento de IA con JSON estatico.
 
-npm run dev
-
-Base local:
+## Base local
 
 http://localhost:3000/v1
 
-## Configuración local actual
+## Estado MVP
 
-El backend quedó actualizado con:
+El backend tiene implementados los modulos:
 
-- Supabase/PostgreSQL conectado.
-- Gemini configurado como proveedor IA principal.
-- Fallback mock preparado para demo.
-- Healthchecks funcionando.
-- Endpoint de prueba real contra Gemini funcionando.
-- Variables sensibles fuera de Git.
+- Health.
+- Auth.
+- Profiles.
+- Consents.
+- Careers.
+- Vocational Reports.
+- Comparisons.
+- Syllabi.
+- Plans.
+- Shares.
+- Events.
+- Admin.
+- AI con Gemini + JSON estatico.
 
-## Variables principales
+## Comandos principales
 
-DATABASE_ENABLED=true
-AI_ENABLED=true
-AI_PROVIDER=gemini
-AI_MODEL=gemini-3.1-flash-lite
-AI_FALLBACK_PROVIDER=mock
-GEMINI_TIMEOUT_MS=20000
+npm install
+npm run build
+npm run dev
 
-## Rutas principales
+## Validaciones rapidas
 
-GET http://localhost:3000/v1/health
-GET http://localhost:3000/v1/health/db
-GET http://localhost:3000/v1/health/ai
-GET http://localhost:3000/v1/ai/status
-POST http://localhost:3000/v1/ai/test
+GET /v1/health
+GET /v1/health/db
+GET /v1/health/ai
+POST /v1/ai/test
+POST /v1/ai/ask
 
-## Prueba real de Gemini
+## Nota
 
-Endpoint:
-
-POST http://localhost:3000/v1/ai/test
-
-Body JSON:
-
-{
-  "prompt": "Responde solo con OK si Gemini está funcionando."
-}
-
-Respuesta esperada:
-
-{
-  "success": true,
-  "data": {
-    "provider": "gemini",
-    "model": "gemini-3.1-flash-lite",
-    "generatedText": "OK"
-  },
-  "meta": {}
-}
-
-## Seguridad
-
-No colocar valores reales de .env, DATABASE_URL, JWT_SECRET, GEMINI_API_KEY ni contraseñas dentro de archivos .md.
-
-El archivo .env no debe subirse al repositorio.
-
-El archivo .env.example solo debe contener placeholders.
+No subir .env al repositorio. Usar .env.example como referencia y compartir secretos por canales seguros.
