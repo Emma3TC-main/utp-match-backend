@@ -1,144 +1,81 @@
 @startuml
-!pragma layout smetana
-skinparam backgroundColor #FFFFFF
-skinparam shadowing false
-skinparam handwritten false
-skinparam defaultFontName Arial
-skinparam packageStyle rectangle
 skinparam componentStyle rectangle
 skinparam linetype ortho
-skinparam ArrowColor #444444
-skinparam classAttributeIconSize 0
-skinparam roundcorner 12
-skinparam nodesep 45
-skinparam ranksep 40
-title UTP Match - Arquitectura física MVP y despliegue escalable
 
-node "Dispositivo usuario" as Device {
-  artifact "Browser móvil/desktop" as Browser
+title DIAGRAMA DE ARQUITECTURA FÍSICA: GCP + MOBILE + POSTGRES + SPECIALIZED PSYCHOLOGY IA + Caching
+
+' --- CAPA DE PRESENTACIÓN ---
+package "CAPA DE PRESENTACIÓN\n(APLICACIÓN MÓVIL)" as CapaPresentacion {
+    component "APLICACIÓN MÓVIL\nRESPONSIVA\n(Flutter/React Native)" as MobileApp
 }
 
-cloud "Vercel / Frontend Hosting" as Vercel {
-  node "Next.js App\nSSR/Static/PWA" as Next
-  node "Edge Network\nTLS + CDN" as Edge
+cloud "internet" as Internet
+
+' --- CAPA DE BACKEND ---
+package "CAPA DE BACKEND" as CapaBackend {
+    
+    package "SUBRED PÚBLICA" as SubredPublica {
+        component "GCP Load\nBalancer" as LoadBalancerPub
+    }
+    
+    package "SUBRED PRIVADA VPC" as SubredPrivada {
+        component "GCP Load\nBalancer" as LoadBalancerPriv
+        
+        package "Google Kubernetes Engine (GKE) Cluster" as GKECluster {
+            frame "GKE Nodes" as GKENodes {
+                component "Microservicios\nBackend\n(Node.js/Go)" as MicroservicesNode
+                component "Microservicios\nBackend\n(Node.js/Go)" as MicroservicesGo
+            }
+        }
+        
+        package "Data Layer / Backend Layer" as DataLayer {
+            database "Cloud SQL for\nPostgreSQL\n(Instancia Gestionada)" as CloudSQL
+            database "GCP CLOUD MEMORYSTORE\nFOR REDIS\n(Instancia Gestionada)" as Redis
+        }
+    }
 }
 
-cloud "Railway / Cloud Run\nBackend container" as Runtime {
-  node "API Node.js TS\nModular Monolith" as Api
-  node "Worker opcional\nAI jobs / parsing" as Worker
+' --- API / IA EXTENSIONES ---
+package "API" as CapaAPI {
+    package "PSYCHOLOGY IA\nGATEWAY" as IAGateway {
+        component "UTP VOCATIONAL IA API\n(Nich Especializado:\nPerfiles Académicos)" as UTP_IA
+        component "PSYCHOTHERAPEUTIC\nCHAT API\n(Internal Specialized\nReasoning: Chat &\nEmpathy)" as Psychotherapeutic_IA
+    }
+    
+    component "Chatly -\nOpenAI GPT-4\n(Externa)" as Chatly
 }
 
-cloud "GCP / Supabase" as Platform {
-  database "PostgreSQL\nCloud SQL o Supabase" as PG
-  folder "Cloud Storage\nPDFs y reportes" as GCS
-  node "Secret Manager\nAPI keys / JWT secret" as Secrets
-  node "IAM / Service Accounts" as IAM
-}
+' --- RELACIONES Y FLUJOS DE DATOS ---
 
-cloud "Servicios externos" as External {
-  node "Chatly AI API" as Chatly
-  node "Sentry / Error Tracking" as Sentry
-  node "OpenTelemetry Collector\nCloud Logging/Monitoring" as OTel
-}
+' Conexión desde el móvil por internet
+MobileApp -right-> Internet
+Internet -right-> LoadBalancerPriv
 
-Device --> Edge : HTTPS
-Edge --> Next : entrega UI / SSR
-Next --> Api : HTTPS REST /v1
-Api --> PG : SQL + JSONB
-Api --> GCS : signed URLs / objetos
-Api --> Secrets : lee secretos
-Api --> IAM : identidad de servicio
-Api --> Chatly : HTTPS + payload mínimo
-Worker --> PG : jobs / actualiza estado
-Worker --> GCS : lee PDFs/reportes
-!pragma layout smetana
-skinparam backgroundColor #FFFFFF
-skinparam shadowing false
-skinparam handwritten false
-skinparam defaultFontName Arial
-skinparam packageStyle rectangle
-skinparam componentStyle rectangle
-skinparam linetype ortho
-skinparam ArrowColor #444444
-skinparam classAttributeIconSize 0
-skinparam roundcorner 12
-skinparam nodesep 45
-skinparam ranksep 40
-title UTP Match - Mapa de contrato API REST /v1
+' API Call externa/pública al Load Balancer Público
+note top of LoadBalancerPub : API CALL (HTTPS)
+LoadBalancerPub -down-> GKECluster
 
-package "/v1/auth" {
-  component "POST /guest\nCrear sesión temporal" as AuthGuest
-}
-package "/v1/profiles" {
-  component "GET /me\nPerfil actual" as ProfileMe
-  component "PATCH /me\nActualizar perfil" as ProfilePatch
-}
-package "/v1/consents" {
-  component "POST /\nRegistrar consentimiento" as ConsentPost
-}
-package "/v1/careers" {
-  component "GET /\nListar carreras" as CareersList
-  component "GET /{careerId}\nDetalle carrera" as CareerGet
-  component "GET /{careerId}/curriculum\nMalla por ciclos" as CurriculumGet
-}
-package "/v1/vocational-reports" {
-  component "POST /\nRegistro manual" as ReportPost
-  component "POST /import\nImportar PDF/JSON" as ReportImport
-  component "GET /{reportId}\nConsultar reporte" as ReportGet
-}
-package "/v1/comparisons" {
-  component "POST /\nGenerar comparación" as ComparePost
-  component "GET /{comparisonId}\nConsultar comparación" as CompareGet
-}
-package "/v1/syllabi" {
-  component "GET /{syllabusId}\nDetalle sílabo" as SyllabusGet
-  component "POST /{syllabusId}/explanations\nExplicar sílabo" as ExplainPost
-}
-package "/v1/plans" {
-  component "POST /\nCrear plan" as PlanPost
-  component "GET /{planId}\nConsultar plan" as PlanGet
-  component "PATCH /{planId}\nActualizar estado/tareas" as PlanPatch
-}
-package "/v1/shares" {
-  component "POST /\nCrear enlace compartido" as SharePost
-  component "GET /{token}\nLeer resumen público" as ShareGet
-}
-package "/v1/events" {
-  component "POST /\nRegistrar evento analytics" as EventPost
-}
-package "/v1/admin" {
-  component "POST /careers\nCrear carrera" as AdminCareer
-  component "POST /courses\nCrear curso" as AdminCourse
-  component "POST /syllabi\nCrear/actualizar sílabo" as AdminSyllabus
-}
+' Flujo desde el Load Balancer Privado a los Nodos de GKE
+LoadBalancerPriv -right-> GKENodes
 
-AuthGuest --> ProfileMe : emite token guest
-ProfileMe --> ConsentPost
-CareersList --> CareerGet
-CareerGet --> CurriculumGet
-ReportPost --> ComparePost
-ReportImport --> ComparePost
-CurriculumGet --> ComparePost
-SyllabusGet --> ExplainPost
-ComparePost --> PlanPost
-PlanPost --> SharePost
-ComparePost --> SharePost
+' Conexión a los microservicios específicos
+GKENodes -right-> MicroservicesNode
+GKENodes -right-> MicroservicesGo
 
-Worker --> Chatly : explicación batch/cache
-Api --> OTel : traces/metrics/logs
-Worker --> OTel
-Api --> Sentry : errores app
-Next --> Sentry : errores front
+' Interacciones con la Base de Datos y Caché
+MicroservicesNode --> CloudSQL
+MicroservicesGo --> CloudSQL
+MicroservicesNode --> Redis : Caching
+MicroservicesGo --> Redis : Caching
+CloudSQL <-> Redis
 
-note top of Runtime
-Para hackathon:
-- Railway para backend por simplicidad.
-Para evolución GCP:
-- Cloud Run para API y worker.
-end note
+' Conexiones de salida hacia las APIs de IA (Cognitive Analysis Core)
+MicroservicesNode -right-> IAGateway : "API CALL\n(HTTPS)"
+MicroservicesGo -right-> IAGateway : "API CALL\n(HTTPS)"
 
-note right of PG
-RLS si se usa Supabase.
-Backups automáticos en piloto institucional.
-end note
+UTP_IA -[hidden]down-> Psychotherapeutic_IA
+
+' Conexión de Fallback externa (General Non-Clinical Support)
+MicroservicesGo --> Chatly : "General Non-Clinical\nSupport (Fallback)"
+
 @enduml

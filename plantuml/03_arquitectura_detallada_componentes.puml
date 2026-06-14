@@ -1,5 +1,12 @@
-@startuml
+```plantuml id="9e2y75"
+@startuml 03_arquitectura_detallada_componentes_utp_match
 !pragma layout smetana
+
+' =========================================================
+' Estilo general
+' =========================================================
+top to bottom direction
+
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam handwritten false
@@ -7,73 +14,166 @@ skinparam defaultFontName Arial
 skinparam packageStyle rectangle
 skinparam componentStyle rectangle
 skinparam linetype ortho
-skinparam ArrowColor #444444
+skinparam ArrowColor #475569
 skinparam classAttributeIconSize 0
-skinparam roundcorner 12
-skinparam nodesep 45
-skinparam ranksep 40
+skinparam roundcorner 14
+skinparam nodesep 65
+skinparam ranksep 70
+skinparam defaultTextAlignment center
+
+skinparam title {
+  FontSize 20
+  FontStyle bold
+  FontColor #0F172A
+}
+
+skinparam package {
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam database {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam folder {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam note {
+  BackgroundColor #FEFCE8
+  BorderColor #A16207
+  FontColor #1E293B
+}
+
 title UTP Match - Arquitectura detallada por componentes
 
-package "Frontend Next.js / React" as FE {
-  component "App Router" as AppRouter
-  component "AuthProvider\nGuest/JWT" as AuthProvider
-  component "CareerSelector" as CareerSelector
-  component "CareerComparisonView" as ComparisonView
-  component "SyllabusCard" as SyllabusCard
-  component "FitRadar / SkillBars" as Visuals
-  component "ActionPlanBuilder" as PlanBuilder
-  component "FamilyShareView" as ShareView
-  component "AdminCatalogForms" as AdminForms
-  component "API Client\nfetch + zod validation" as ApiClient
-  component "Analytics Client" as AnalyticsClient
+' =========================================================
+' Frontend
+' =========================================================
+package "Frontend React + TypeScript" as FE #E0F2FE {
+
+  package "Shell de aplicación" as FEShell #FFFFFF {
+    component "App Router" as AppRouter
+    component "AuthProvider\nGuest / JWT" as AuthProvider
+    component "API Client\nfetch + zod validation" as ApiClient #DBEAFE
+  }
+
+  package "Experiencia del estudiante" as StudentUX #FFFFFF {
+    component "CareerSelector" as CareerSelector
+    component "CareerComparisonView" as ComparisonView
+    component "SyllabusCard" as SyllabusCard
+    component "SkillBars" as Visuals
+    component "ActionPlanBuilder" as PlanBuilder
+    component "FamilyShareView" as ShareView
+  }
+
+  package "Backoffice mínimo" as BackofficeUX #FFFFFF {
+    component "AdminCatalogForms" as AdminForms
+  }
 }
 
-package "Backend Node.js TypeScript" as BE {
-  component "HTTP Controllers\nREST /v1" as Controllers
-  component "DTO Validators\nJSON Schema / Zod" as Validators
-  component "Auth Middleware\nJWT + role guard" as AuthMw
-  component "Consent Guard" as ConsentGuard
-  component "Profile Module" as ProfileModule
-  component "Catalog Module" as CatalogModule
-  component "Report Module" as ReportModule
-  component "Comparison Module" as ComparisonModule
-  component "Syllabus Module" as SyllabusModule
-  component "Plan Module" as PlanModule
-  component "Share Module" as ShareModule
-  component "Event Module" as EventModule
-  component "Admin Module" as AdminModule
-  component "AI Orchestrator" as AIOrch
-  component "Repository Layer\nSQL queries" as Repos
+' =========================================================
+' Backend
+' =========================================================
+package "Backend Node.js + TypeScript" as BE #ECFDF5 {
+
+  package "Entrada HTTP y seguridad" as EntryLayer #FFFFFF {
+    component "HTTP Controllers\nREST /v1" as Controllers #DCFCE7
+    component "DTO Validators\nJSON Schema / Zod" as Validators
+    component "Auth Middleware\nJWT + role guard" as AuthMw
+    component "Consent Guard" as ConsentGuard
+  }
+
+  package "Módulos de dominio" as DomainModules #FFFFFF {
+    component "Profile Module" as ProfileModule
+    component "Catalog Module" as CatalogModule
+    component "Report Module" as ReportModule
+    component "Comparison Module" as ComparisonModule
+    component "Syllabus Module" as SyllabusModule
+    component "Plan Module" as PlanModule
+    component "Share Module" as ShareModule
+    component "Event Module" as EventModule
+  }
+
+  package "Acceso a datos" as DataAccess #FFFFFF {
+    component "Repository Layer\nSQL queries" as Repos
+  }
+
+  component "AI Orchestrator" as AIOrch #EEF2FF
 }
 
-package "AI Orchestration" as AI {
+' =========================================================
+' AI Orchestration
+' =========================================================
+package "AI Orchestration" as AI #F5F3FF {
   component "Prompt Builder\nversionado" as PromptBuilder
   component "Context Minimizer\nPII minimization" as ContextMin
-  component "Chatly Adapter" as ChatlyAdapter
+  component "Gemini Adapter" as GeminiAdapter
   component "Structured Output Parser" as Parser
   component "Schema Validator" as SchemaValidator
-  component "Cache Key Builder\nsyllabus_hash + prompt_version" as CacheKey
 }
 
-package "Persistence" as DB {
-  database "PostgreSQL" as Pg
-  folder "Object Storage" as Obj
-  collections "Redis opcional" as Cache
+' =========================================================
+' Persistence
+' =========================================================
+package "Persistence" as DB #FFEDD5 {
+  database "PostgreSQL\nRelacional + JSONB" as Pg
+  folder "Object Storage\nPDFs de sílabos / reportes" as Obj
 }
 
+' =========================================================
+' Anclas visuales ocultas
+' Mantienen lectura vertical y evitan cruces
+' =========================================================
+FE -[hidden]down- BE
+BE -[hidden]down- AI
+AI -[hidden]down- DB
+
+FEShell -[hidden]right- StudentUX
+StudentUX -[hidden]right- BackofficeUX
+
+EntryLayer -[hidden]right- DomainModules
+DomainModules -[hidden]right- DataAccess
+
+PromptBuilder -[hidden]right- ContextMin
+ContextMin -[hidden]right- GeminiAdapter
+GeminiAdapter -[hidden]right- Parser
+Parser -[hidden]right- SchemaValidator
+
+Pg -[hidden]right- Obj
+
+' =========================================================
+' Frontend interno
+' =========================================================
 AppRouter --> AuthProvider
+
 CareerSelector --> ApiClient
 ComparisonView --> ApiClient
 SyllabusCard --> ApiClient
 PlanBuilder --> ApiClient
 ShareView --> ApiClient
 AdminForms --> ApiClient
-ApiClient --> Controllers : REST JSON
-AnalyticsClient --> Controllers : event logs
 
+ApiClient --> Controllers : REST JSON
+
+' =========================================================
+' Entrada backend
+' =========================================================
 Controllers --> AuthMw
 AuthMw --> ConsentGuard
 Controllers --> Validators
+
 Controllers --> ProfileModule
 Controllers --> CatalogModule
 Controllers --> ReportModule
@@ -82,33 +182,52 @@ Controllers --> SyllabusModule
 Controllers --> PlanModule
 Controllers --> ShareModule
 Controllers --> EventModule
-Controllers --> AdminModule
 
+' =========================================================
+' Dominio hacia persistencia e IA
+' =========================================================
 ProfileModule --> Repos
 CatalogModule --> Repos
+
 ReportModule --> Repos
 ReportModule --> Obj
+
 ComparisonModule --> Repos
 ComparisonModule --> AIOrch
+
 SyllabusModule --> Repos
 SyllabusModule --> AIOrch
+
 PlanModule --> Repos
 ShareModule --> Repos
 EventModule --> Repos
-AdminModule --> Repos
 
-AIOrch --> PromptBuilder
-AIOrch --> ContextMin
-AIOrch --> CacheKey
-AIOrch --> Cache
-AIOrch --> ChatlyAdapter
-ChatlyAdapter --> Parser
-Parser --> SchemaValidator
-SchemaValidator --> AIOrch
 Repos --> Pg
 
+' =========================================================
+' Orquestación IA
+' =========================================================
+AIOrch --> PromptBuilder
+AIOrch --> ContextMin
+AIOrch --> GeminiAdapter
+
+GeminiAdapter --> Parser
+Parser --> SchemaValidator
+SchemaValidator --> AIOrch
+
+' =========================================================
+' Notas
+' =========================================================
 note bottom of FE
 Front valida respuestas para evitar romper UI.
-Back valida contratos para evitar guardar JSON inválido.
+La experiencia principal se concentra en el journey del estudiante:
+explorar, comparar, entender sílabos y construir un plan.
 end note
+
+note bottom of BE
+Back valida contratos para evitar guardar JSON inválido.
+Los módulos se mantienen como monolito modular para el MVP.
+end note
+
 @enduml
+```

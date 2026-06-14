@@ -4,10 +4,10 @@
 
 El alcance técnico se mantiene en un MVP realista para hackathon y preparado para evolución:
 
-- Frontend: Next.js / React / Tailwind, responsive y PWA simple.
+- Frontend: React / Tailwind, responsive y PWA simple.
 - Backend MVP: Node.js + TypeScript como modular monolith REST-first.
 - Persistencia: PostgreSQL/Supabase con núcleo relacional y `jsonb` para bordes semiestructurados.
-- IA: Chatly AI como proveedor de recomendación, comparación y explicación de sílabos.
+- IA: Gemini AI como proveedor de recomendación, comparación y explicación de sílabos.
 - Storage: object storage para PDFs de sílabos y reportes vocacionales.
 - Auth: Supabase Auth o GCP IAM/JWT según implementación elegida.
 - Deploy MVP: Vercel frontend + Railway backend, con ruta de madurez hacia GCP Cloud Run + Cloud SQL + Cloud Storage.

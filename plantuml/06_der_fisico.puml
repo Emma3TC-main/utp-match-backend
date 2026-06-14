@@ -25,7 +25,7 @@ entity "users" as users {
   updated_at : timestamptz
 }
 entity "student_profiles" as student_profiles {
-  * id : uuid <<PK>>
+  * id : uuid <<PK>> 
   --
   user_id : uuid <<FK users.id, UK>>
   first_name : text

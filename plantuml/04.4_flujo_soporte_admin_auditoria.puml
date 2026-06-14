@@ -1,0 +1,87 @@
+@startuml 04_4_flujo_soporte_admin_auditoria
+!pragma layout smetana
+
+top to bottom direction
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #475569
+skinparam classAttributeIconSize 0
+skinparam roundcorner 14
+skinparam nodesep 70
+skinparam ranksep 75
+skinparam defaultTextAlignment center
+
+skinparam actor {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam database {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam folder {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam note {
+  BackgroundColor #FEFCE8
+  BorderColor #A16207
+  FontColor #1E293B
+}
+
+title UTP Match - DFD 04.4 Soporte, administración y auditoría
+
+actor "Estudiante\nusuario principal MVP" as Student
+actor "Familia / Tutor\nopcional" as Family
+actor "Administrador\nbackoffice mínimo" as Admin
+
+package "Procesos de soporte" as Flow #F8FAFC {
+  rectangle "P7. Compartir resumen\nfamiliar" as P7 #DBEAFE
+  rectangle "P8. Registrar eventos\ny auditoría" as P8
+  rectangle "P9. Mantener catálogo\ny sílabos" as P9
+}
+
+package "Datos de soporte" as DataStores #FFEDD5 {
+  database "D3 careers\ncourses\ncareer_courses\nsyllabi" as D3
+  database "D5 plans_of_action\nshared_links" as D5
+  database "D6 event_logs\naudit_logs" as D6
+  folder "D7 object storage\nPDFs / reportes" as D7
+}
+
+Student --> P7 : genera enlace\nfamiliar
+P7 --> D5 : shared_link
+Family ..> P7 : lee resumen\ncompartido
+P7 ..> Family : vista resumida\nopcional
+
+Admin ..> P9 : alta / edición\ncarreras, cursos y sílabos
+P9 --> D3 : datos maestros\nversionados
+P9 --> D7 : PDF de sílabo\nsi aplica
+
+P7 --> P8 : evento compartir
+P9 --> P8 : evento backoffice
+P8 --> D6 : eventos de producto\ny auditoría mínima
+
+note bottom of Flow
+Estos flujos se mantienen para coherencia arquitectónica,
+pero no son el foco principal de la demo MVP.
+end note
+
+@enduml

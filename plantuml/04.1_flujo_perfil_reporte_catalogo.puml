@@ -1,0 +1,101 @@
+```plantuml
+@startuml 04_1_flujo_perfil_reporte_catalogo
+!pragma layout smetana
+
+top to bottom direction
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam ArrowColor #475569
+skinparam classAttributeIconSize 0
+skinparam roundcorner 14
+skinparam nodesep 70
+skinparam ranksep 75
+skinparam defaultTextAlignment center
+
+skinparam actor {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam database {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam folder {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam cloud {
+  BackgroundColor #F5F3FF
+  BorderColor #6D28D9
+  FontColor #0F172A
+}
+
+skinparam note {
+  BackgroundColor #FEFCE8
+  BorderColor #A16207
+  FontColor #1E293B
+}
+
+title UTP Match - DFD 04.1 Perfil, reporte vocacional y catálogo
+
+actor "Estudiante\nusuario principal MVP" as Student
+
+package "Procesos iniciales del journey" as Flow #E0F2FE {
+  rectangle "P1. Capturar perfil\ny consentimiento" as P1 #DBEAFE
+  rectangle "P2. Registrar reporte\nvocacional" as P2
+  rectangle "P3. Consultar catálogo\nde carreras / cursos" as P3
+}
+
+package "Datos usados" as DataStores #FFEDD5 {
+  database "D1 users\nstudent_profiles\nconsent_records" as D1
+  database "D2 vocational_reports" as D2
+  database "D3 careers\ncourses\ncareer_courses\nsyllabi" as D3
+  folder "D7 object storage\nPDFs / reportes" as D7
+}
+
+package "Servicio externo / roadmap" as External #F5F3FF {
+  cloud "E2 Test Vocacional UTP\nAdapter futuro /\ncarga manual MVP" as E2
+}
+
+Student --> P1 : datos básicos\nmodo guest / registrado
+P1 --> D1 : perfil + consentimiento
+P1 --> Student : sesión inicial\nhabilitada
+
+Student --> P2 : formulario manual\nJSON o archivo
+P2 --> D2 : scores_json\ntop_careers_json
+P2 --> D7 : PDF / archivo original\nsi aplica
+P2 --> Student : reporte registrado
+
+E2 ..> P2 : adapter posterior\nroadmap
+
+Student --> P3 : selecciona 2-3 carreras
+P3 --> D3 : consulta malla,\ncursos y sílabos
+D3 --> P3 : catálogo publicable
+P3 --> Student : opciones,\nciclos y cursos
+
+note bottom of Flow
+Este bloque prepara la información base:
+perfil, consentimiento, reporte vocacional
+y catálogo académico consultable.
+end note
+
+@enduml
+```

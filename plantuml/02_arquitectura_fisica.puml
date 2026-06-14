@@ -1,5 +1,11 @@
 @startuml 02_arquitectura_fisica_utp_match
 !pragma layout smetana
+
+' =========================================================
+' Estilo general
+' =========================================================
+top to bottom direction
+
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam handwritten false
@@ -7,65 +13,222 @@ skinparam defaultFontName Arial
 skinparam packageStyle rectangle
 skinparam componentStyle rectangle
 skinparam linetype ortho
-skinparam ArrowColor #444444
+skinparam ArrowColor #475569
 skinparam classAttributeIconSize 0
-skinparam roundcorner 12
-skinparam nodesep 45
-skinparam ranksep 40
+skinparam roundcorner 14
+skinparam nodesep 70
+skinparam ranksep 75
+skinparam defaultTextAlignment center
+
+skinparam title {
+  FontSize 20
+  FontStyle bold
+  FontColor #0F172A
+}
+
+skinparam node {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam artifact {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam database {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam folder {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam cloud {
+  BackgroundColor #F5F3FF
+  BorderColor #6D28D9
+  FontColor #0F172A
+}
+
+skinparam note {
+  BackgroundColor #FEFCE8
+  BorderColor #A16207
+  FontColor #1E293B
+}
+
 title UTP Match - Arquitectura física MVP y despliegue escalable
 
-node "Dispositivo usuario" as Device {
-  artifact "Browser móvil/desktop" as Browser
+' =========================================================
+' Dispositivos de consumo
+' Prioridad: estudiante como usuario principal del MVP
+' =========================================================
+node "Dispositivo del estudiante" as StudentDevice #E0F2FE {
+  artifact "PWA Mobile First\nReact + TypeScript\nBrowser móvil" as MobilePWA #DBEAFE
+  artifact "Web Responsive\nReact + Tailwind\nBrowser desktop/tablet" as WebBrowser
 }
 
-cloud "Vercel / Frontend Hosting" as Vercel {
-  node "Next.js App\nSSR/Static/PWA" as Next
-  node "Edge Network\nTLS + CDN" as Edge
+node "Usuarios secundarios\nSoporte / roadmap" as SecondaryDevices #F8FAFC {
+  artifact "Familia / Tutor\nResumen compartido" as FamilyBrowser
+  artifact "Promotor UTP\nAcompañamiento futuro" as AdvisorBrowser
+  artifact "Admin catálogo\nBackoffice mínimo" as AdminBrowser
 }
 
-cloud "Railway / Cloud Run\nBackend container" as Runtime {
-  node "API Node.js TS\nModular Monolith" as Api
-  node "Worker opcional\nAI jobs / parsing" as Worker
+' =========================================================
+' Frontend hosting
+' =========================================================
+cloud "Frontend Hosting\nMVP: Localhost\nEvolución: Vercel / Netlify" as FrontHosting #E0F2FE {
+  node "Edge Network\nTLS + CDN" as Edge #DBEAFE
+  node "React App Build\nSPA/PWA estática" as ReactApp
+  node "Ruta /admin\nPanel mínimo de catálogo" as AdminRoute
 }
 
-cloud "GCP / Supabase" as Platform {
-  database "PostgreSQL\nCloud SQL o Supabase" as PG
-  folder "Cloud Storage\nPDFs y reportes" as GCS
-  node "Secret Manager\nAPI keys / JWT secret" as Secrets
-  node "IAM / Service Accounts" as IAM
+' =========================================================
+' Backend runtime
+' =========================================================
+cloud "Backend Runtime\nMVP: Localhost / Railway\nEvolución: GCP Cloud Run" as Runtime #ECFDF5 {
+  node "API Node.js + TypeScript\nModular Monolith\nREST /v1" as Api #DCFCE7
+  node "Worker opcional\nParsing de sílabos / jobs IA\nbatch y caché" as Worker
 }
 
-cloud "Servicios externos" as External {
-  node "Chatly AI API" as Chatly
-  node "Sentry / Error Tracking" as Sentry
-  node "OpenTelemetry Collector\nCloud Logging/Monitoring" as OTel
+' =========================================================
+' Plataforma de datos y seguridad
+' =========================================================
+cloud "Supabase / GCP Managed Services" as Platform #FFEDD5 {
+  node "Supabase Auth\nJWT + roles + RLS" as SupabaseAuth #FFFFFF
+  database "PostgreSQL / Supabase\nRelacional + JSONB" as PG
+  folder "Object Storage\nPDFs de sílabos / reportes" as Storage
+  node "Secrets / Env Vars\nAPI keys + JWT config" as Secrets
+  node "Service Account / IAM\nPermisos de runtime" as IAM
 }
 
-Device --> Edge : HTTPS
-Edge --> Next : entrega UI / SSR
-Next --> Api : HTTPS REST /v1
-Api --> PG : SQL + JSONB
-Api --> GCS : signed URLs / objetos
-Api --> Secrets : lee secretos
+' =========================================================
+' Servicios externos y evolución
+' =========================================================
+cloud "Servicios externos / roadmap" as External #F5F3FF {
+  node "Gemini AI API\nRecomendación y explicación" as Gemini
+  node "Test Vocacional UTP\nCarga manual MVP\nAdapter futuro" as VocationalUTP
+  node "CRM / Admisión UTP\nLead cualificado futuro" as CRM
+}
+
+cloud "Observabilidad" as Observability #F5F3FF {
+  node "Sentry\nErrores front/back" as Sentry
+  node "OpenTelemetry / Logs\ntraces + métricas" as OTel
+}
+
+' =========================================================
+' Anclas visuales ocultas
+' Mantienen el flujo vertical y evitan cruces
+' =========================================================
+StudentDevice -[hidden]down- FrontHosting
+FrontHosting -[hidden]down- Runtime
+Runtime -[hidden]down- Platform
+Platform -[hidden]down- External
+External -[hidden]right- Observability
+
+MobilePWA -[hidden]right- WebBrowser
+FamilyBrowser -[hidden]right- AdvisorBrowser
+AdvisorBrowser -[hidden]right- AdminBrowser
+
+Edge -[hidden]right- ReactApp
+ReactApp -[hidden]right- AdminRoute
+
+Api -[hidden]right- Worker
+
+SupabaseAuth -[hidden]right- PG
+PG -[hidden]right- Storage
+Storage -[hidden]right- Secrets
+Secrets -[hidden]right- IAM
+
+Gemini -[hidden]right- VocationalUTP
+VocationalUTP -[hidden]right- CRM
+
+Sentry -[hidden]right- OTel
+
+' =========================================================
+' Flujo principal del estudiante
+' =========================================================
+MobilePWA --> Edge : HTTPS\nmobile-first
+WebBrowser --> Edge : HTTPS\nweb responsive
+
+Edge --> ReactApp : entrega UI\nassets + PWA
+ReactApp --> Api : HTTPS REST /v1\nJSON
+
+' =========================================================
+' Flujos secundarios
+' No son el centro del MVP, pero quedan soportados
+' =========================================================
+FamilyBrowser ..> Edge : consulta resumen\nopcional
+AdvisorBrowser ..> Edge : soporte vocacional\nroadmap
+AdminBrowser ..> Edge : acceso backoffice
+Edge ..> AdminRoute : ruta protegida\n/admin
+AdminRoute ..> Api : HTTPS REST\n/v1/admin
+
+' =========================================================
+' Backend hacia seguridad, datos y archivos
+' =========================================================
+Api --> SupabaseAuth : valida JWT / guest\nroles y RLS
+Api --> PG : SQL + JSONB\nperfiles, carreras,\ncomparaciones y planes
+Api --> Storage : signed URLs\nsílabos y reportes
+Api --> Secrets : lee variables seguras
 Api --> IAM : identidad de servicio
-Api --> Chatly : HTTPS + payload mínimo
-Worker --> PG : jobs / actualiza estado
-Worker --> GCS : lee PDFs/reportes
-Worker --> Chatly : explicación batch/cache
-Api --> OTel : traces/metrics/logs
-Worker --> OTel
-Api --> Sentry : errores app
-Next --> Sentry : errores front
 
+Worker --> PG : actualiza estados\nparsed_json / explanation_json
+Worker --> Storage : lee PDFs y reportes
+Worker --> Secrets : usa claves seguras
+
+' =========================================================
+' IA e integraciones futuras
+' =========================================================
+Api --> Gemini : HTTPS\nprompt + contexto mínimo
+Worker --> Gemini : jobs IA\nbatch/cache
+
+Api ..> VocationalUTP : adapter futuro\nimportar reporte vocacional
+CRM ..> Api : integración futura\nlead cualificado
+
+' =========================================================
+' Observabilidad
+' =========================================================
+ReactApp --> Sentry : errores front
+AdminRoute --> Sentry : errores admin
+Api --> Sentry : errores backend
+Api --> OTel : logs / traces / metrics
+Worker --> OTel : logs de jobs
+
+' =========================================================
+' Notas
+' =========================================================
 note top of Runtime
-Para hackathon:
-- Railway para backend por simplicidad.
-Para evolución GCP:
-- Cloud Run para API y worker.
+Decisión MVP:
+- Monolito modular en Node.js para API y worker.
+- Despliegue inicial en Localhost para backend y frontend.
+- Railway queda como opción rápida para demo pública.
+
+Evolución:
+- Migrar API y worker a Cloud Run.
 end note
 
-note right of PG
-RLS si se usa Supabase.
-Backups automáticos en piloto institucional.
+note right of Platform
+Supabase concentra:
+- Auth para usuarios guest/registrados.
+- PostgreSQL con JSONB.
+- Row Level Security si aplica.
+- Storage para PDFs de sílabos y reportes.
 end note
+
+note bottom of StudentDevice
+La demo debe mostrar principalmente:
+- experiencia mobile-first del estudiante
+- exploración de carreras
+- explicación de sílabos
+- comparación carrera/perfil
+- plan de acción vocacional
+end note
+
 @enduml
+

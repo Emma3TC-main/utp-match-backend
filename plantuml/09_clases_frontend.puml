@@ -12,7 +12,7 @@ skinparam classAttributeIconSize 0
 skinparam roundcorner 12
 skinparam nodesep 45
 skinparam ranksep 40
-title UTP Match - Diagrama de clases/componentes frontend Next.js/React
+title UTP Match - Diagrama de clases/componentes frontend React /TypeScript
 
 package "app routes" {
   class HomePage <<page>>

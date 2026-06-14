@@ -1,5 +1,12 @@
+```plantuml
 @startuml 01_arquitectura_logica_utp_match
 !pragma layout smetana
+
+' =========================================================
+' Estilo general
+' =========================================================
+top to bottom direction
+
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam handwritten false
@@ -7,89 +14,212 @@ skinparam defaultFontName Arial
 skinparam packageStyle rectangle
 skinparam componentStyle rectangle
 skinparam linetype ortho
-skinparam ArrowColor #444444
+skinparam ArrowColor #475569
 skinparam classAttributeIconSize 0
-skinparam roundcorner 12
-skinparam nodesep 45
-skinparam ranksep 40
-title UTP Match / SyllabusX - Arquitectura lógica MVP + evolución
+skinparam roundcorner 14
+skinparam nodesep 70
+skinparam ranksep 75
+skinparam defaultTextAlignment center
 
-actor "Estudiante\n4.º/5.º secundaria" as Student
-actor "Familia / Tutor" as Family
-actor "Promotor / Orientador UTP" as Advisor
-actor "Administrador\nde catálogo" as Admin
-
-package "Capa de experiencia" as UX {
-  component "Web App Responsive\nNext.js / React / Tailwind" as WebApp
-  component "PWA Mobile Simplified\nReact responsive" as PWA
-  component "Panel Admin mínimo\nCatálogo y sílabos" as AdminUI
+skinparam title {
+  FontSize 20
+  FontStyle bold
+  FontColor #0F172A
 }
 
-package "Capa de acceso y seguridad" as Access {
-  component "API Gateway / Edge Router\nHTTPS + CORS + Rate Limit" as Gateway
+skinparam actor {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam database {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam folder {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam cloud {
+  BackgroundColor #F5F3FF
+  BorderColor #6D28D9
+  FontColor #0F172A
+}
+
+skinparam note {
+  BackgroundColor #FEFCE8
+  BorderColor #A16207
+  FontColor #1E293B
+}
+
+title UTP Match - Arquitectura lógica MVP + evolución
+
+' =========================================================
+' Actores
+' =========================================================
+actor "Estudiante\n4.º/5.º secundaria" as Student
+actor "Familia / Tutor" as Family
+actor "Promotor /\nOrientador UTP" as Advisor
+actor "Administrador\nde catálogo" as Admin
+
+' =========================================================
+' Capa de experiencia
+' =========================================================
+package "Capa de experiencia\nFront Web + Mobile" as UX #E0F2FE {
+  component "PWA Mobile First\nReact responsive\nCanal principal MVP" as PWA #DBEAFE
+  component "Web App Responsive\n React / Tailwind\nCanal complementario" as WebApp
+  component "Panel Admin mínimo\nCatálogo y sílabos\nBackoffice" as AdminUI
+}
+
+' =========================================================
+' Capa de acceso y seguridad
+' =========================================================
+package "Capa de acceso y seguridad" as Access #ECFDF5 {
+  component "API Gateway / Edge Router\nHTTPS + CORS\nREST /v1" as Gateway #DCFCE7
   component "Auth & Roles\nSupabase Auth / GCP IAM\nJWT + RLS" as Auth
   component "Consentimiento y privacidad\nversionado + auditoría" as Consent
 }
 
-package "Backend modular monolith\nNode.js + TypeScript para MVP" as Backend {
-  component "User/Profile Service" as ProfileSvc
-  component "Career Catalog Service" as CatalogSvc
-  component "Vocational Report Adapter\nmanual / PDF / JSON" as ReportSvc
-  component "Comparison Engine\nperfil + carrera + sílabo" as CompareSvc
-  component "Syllabus Explainer Service" as ExplainSvc
-  component "Action Plan Service" as PlanSvc
-  component "Analytics Event Service" as EventSvc
-  component "AI Orchestration Service\nprompting + JSON validation" as AISvc
+' =========================================================
+' Backend
+' =========================================================
+package "Backend modular monolith\nNode.js + TypeScript para MVP" as Backend #F8FAFC {
+
+  package "Servicios core del journey del estudiante" as CoreServices #FFFFFF {
+    component "User / Profile Service" as ProfileSvc
+    component "Career Catalog Service" as CatalogSvc
+    component "Vocational Report Adapter\nmanual / JSON" as ReportSvc
+    component "Comparison Engine\nperfil + carrera + sílabo" as CompareSvc
+    component "Syllabus Explainer Service" as ExplainSvc
+    component "Action Plan Service" as PlanSvc
+    component "Analytics Event Service" as EventSvc
+  }
+
+  package "IA aplicada a la experiencia" as AIBlock #FFFFFF {
+    component "AI Orchestration Service\nprompting + JSON validation" as AISvc #EEF2FF
+  }
 }
 
-package "Datos y conocimiento" as Data {
+' =========================================================
+' Datos y conocimiento
+' =========================================================
+package "Datos y conocimiento" as Data #FFEDD5 {
   database "PostgreSQL / Supabase\nRelacional + JSONB" as Postgres
   folder "Object Storage\nPDFs de sílabos / reportes" as Storage
-  collections "Redis / Cache opcional\nexplicaciones frecuentes" as Redis
 }
 
-cloud "Chatly AI\nProveedor IA generativa" as Chatly
-cloud "Test Vocacional UTP\nAdapter futuro / carga manual MVP" as VocationalUTP
-cloud "CRM / Admisión UTP\nIntegración futura" as CRM
-cloud "Observabilidad\nLogs + métricas + trazas" as Obs
+' =========================================================
+' Servicios externos / evolución
+' =========================================================
+package "Servicios externos / roadmap" as External #F5F3FF {
+  cloud "Gemini AI\nProveedor IA generativa" as Chatly
+  cloud "Test Vocacional UTP\nAdapter futuro /\ncarga manual MVP" as VocationalUTP
+  cloud "CRM / Admisión UTP\nIntegración futura" as CRM
+  cloud "Observabilidad\nLogs + métricas + trazas" as Obs
+}
 
-Student --> WebApp : explora carreras\ncompara y guarda plan
-Student --> PWA : uso móvil
-Family --> WebApp : revisa resumen compartido
-Advisor --> WebApp : acompaña decisión
-Admin --> AdminUI : mantiene catálogo
+' =========================================================
+' Anclas visuales ocultas
+' Priorizan el flujo vertical del estudiante
+' =========================================================
+Student -[hidden]down- UX
+UX -[hidden]down- Access
+Access -[hidden]down- Backend
+Backend -[hidden]down- Data
 
-WebApp --> Gateway : REST /v1 + JSON
+Family -[hidden]right- Advisor
+Advisor -[hidden]right- Admin
+
+PWA -[hidden]right- WebApp
+WebApp -[hidden]right- AdminUI
+
+Gateway -[hidden]right- Auth
+Auth -[hidden]right- Consent
+
+CoreServices -[hidden]right- AIBlock
+
+Data -[hidden]right- External
+
+Chatly -[hidden]down- VocationalUTP
+VocationalUTP -[hidden]down- CRM
+CRM -[hidden]down- Obs
+
+' =========================================================
+' Flujo principal del MVP
+' El estudiante es el usuario central de la solución
+' =========================================================
+Student --> PWA : experiencia mobile-first\nexplora, compara y decide
+Student --> WebApp : experiencia web responsive\nrevisa carreras, sílabos y plan
+
 PWA --> Gateway : REST /v1 + JSON
-AdminUI --> Gateway : REST /v1/admin
+WebApp --> Gateway : REST /v1 + JSON
+
+' =========================================================
+' Flujos secundarios
+' Se mantienen, pero no compiten con el flujo principal
+' =========================================================
+Family ..> WebApp : resumen compartido\nopcional
+Advisor ..> WebApp : acompañamiento\nsoporte futuro
+Admin ..> AdminUI : mantenimiento de catálogo\nbackoffice mínimo
+AdminUI ..> Gateway : REST /v1/admin
+
+' =========================================================
+' Seguridad y entrada al backend
+' =========================================================
 Gateway --> Auth : valida JWT / guest
 Gateway --> Consent : verifica consentimiento
-Gateway --> Backend : enruta dominio
+Gateway --> Backend : enruta dominios del MVP
 
-ProfileSvc --> Postgres
-CatalogSvc --> Postgres
-ReportSvc --> Postgres
-ReportSvc --> Storage : guarda PDF/archivo
+' =========================================================
+' Servicios de negocio hacia datos
+' =========================================================
+ProfileSvc --> Postgres : perfil estudiante
+CatalogSvc --> Postgres : carreras y mallas
+
+ReportSvc --> Postgres : reporte vocacional
+ReportSvc --> Storage : PDF / archivo
 ReportSvc ..> VocationalUTP : adapter posterior
+
 CompareSvc --> Postgres : mallas, cursos, perfil
 CompareSvc --> AISvc : narrativa y preguntas
+
 ExplainSvc --> Postgres : sílabo parseado
 ExplainSvc --> AISvc : explicación estructurada
-PlanSvc --> Postgres
+
+PlanSvc --> Postgres : plan de acción
 EventSvc --> Postgres : eventos de producto
+
+' =========================================================
+' IA, observabilidad e integraciones futuras
+' =========================================================
 AISvc --> Chatly : prompt + contexto mínimo
-AISvc --> Redis : cache por syllabus_hash/prompt_version
-Backend --> Obs : logs/traces/metrics
-Gateway --> Obs
+
+Backend --> Obs : logs / traces / metrics
+Gateway --> Obs : access logs
+
 CRM ..> EventSvc : lead cualificado\nroadmap 6-12 meses
 
+' =========================================================
+' Notas
+' =========================================================
 note right of Backend
 MVP decidido:
-- React / Next.js en frontend
+- React + TypeScript en frontend
 - Node.js + TypeScript como backend modular
 - REST-first
 - PostgreSQL/Supabase
-- Chatly AI para recomendación/explicación
+- Gemini AI para recomendación/explicación
 end note
 
 note bottom of Data
@@ -99,4 +229,6 @@ JSONB se usa para:
 - explanation_json y comparison_json
 - event_props_json / metadata_json
 end note
+
 @enduml
+```

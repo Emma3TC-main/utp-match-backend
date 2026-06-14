@@ -1,73 +1,190 @@
-@startuml
+```plantuml
+@startuml 07_casos_uso_utp_match
+!pragma layout smetana
+
+' =========================================================
+' Estilo general
+' =========================================================
 left to right direction
+
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam handwritten false
 skinparam defaultFontName Arial
 skinparam packageStyle rectangle
-skinparam componentStyle rectangle
 skinparam linetype ortho
-skinparam ArrowColor #444444
+skinparam ArrowColor #475569
 skinparam classAttributeIconSize 0
-skinparam roundcorner 12
-skinparam nodesep 45
-skinparam ranksep 40
+skinparam roundcorner 14
+skinparam nodesep 65
+skinparam ranksep 70
+skinparam defaultTextAlignment center
+
+skinparam title {
+  FontSize 21
+  FontStyle bold
+  FontColor #0F172A
+}
+
+skinparam actor {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam package {
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam note {
+  BackgroundColor #FEFCE8
+  BorderColor #A16207
+  FontColor #1E293B
+}
+
 title UTP Match - Diagrama de casos de uso
 
-actor "Estudiante" as Student
+' =========================================================
+' Actores
+' =========================================================
+actor "Estudiante" as Student #DBEAFE
 actor "Invitado" as Guest
 actor "Familia / Tutor" as Family
 actor "Orientador / Promotor" as Advisor
 actor "Administrador" as Admin
-actor "Sistema IA\nChatly AI" as AI
+actor "Sistema IA\nGemini AI" as AI
 
-rectangle "UTP Match" {
-  usecase "Entrar como invitado" as UCGuest
-  usecase "Crear perfil estudiante" as UCProfile
-  usecase "Aceptar consentimiento" as UCConsent
-  usecase "Registrar reporte vocacional\nmanual / archivo" as UCReport
-  usecase "Explorar catálogo\nde carreras" as UCCatalog
-  usecase "Comparar carreras" as UCCompare
-  usecase "Ver match perfil-carrera" as UCFit
-  usecase "Explicar curso/sílabo\nen lenguaje claro" as UCExplain
-  usecase "Guardar shortlist" as UCShortlist
-  usecase "Crear plan de acción" as UCPlan
-  usecase "Compartir resumen\ncon familia" as UCShare
-  usecase "Revisar resumen compartido" as UCReadShare
-  usecase "Acompañar decisión\ncon evidencia" as UCAdvisor
-  usecase "Mantener carreras, cursos\ny sílabos" as UCAdminCatalog
-  usecase "Revisar analítica\ny eventos" as UCAnalytics
-  usecase "Generar explicación\nestructurada" as UCAIExplain
-  usecase "Generar narrativa\nde comparación" as UCAICompare
+' =========================================================
+' Sistema
+' =========================================================
+rectangle "UTP Match" as SystemBoundary #F8FAFC {
+
+  package "Acceso y perfil" as AccessUC #E0F2FE {
+    usecase "Entrar como invitado" as UCGuest
+    usecase "Crear perfil estudiante" as UCProfile #DBEAFE
+    usecase "Aceptar consentimiento" as UCConsent
+    usecase "Registrar reporte vocacional\nmanual / archivo" as UCReport #DBEAFE
+  }
+
+  package "Journey principal del estudiante" as StudentJourney #EFF6FF {
+    usecase "Explorar catálogo\nde carreras" as UCCatalog #DBEAFE
+    usecase "Comparar carreras" as UCCompare #DBEAFE
+    usecase "Ver match perfil-carrera" as UCFit #DBEAFE
+    usecase "Explicar curso/sílabo\nen lenguaje claro" as UCExplain #DBEAFE
+    usecase "Guardar shortlist" as UCShortlist #DBEAFE
+    usecase "Crear plan de acción" as UCPlan #DBEAFE
+    usecase "Compartir resumen\ncon familia" as UCShare #DBEAFE
+  }
+
+  package "Soporte familiar y orientación" as SupportUC #F8FAFC {
+    usecase "Revisar resumen compartido" as UCReadShare
+    usecase "Acompañar decisión\ncon evidencia" as UCAdvisor
+  }
+
+  package "Backoffice y seguimiento" as AdminUC #F8FAFC {
+    usecase "Mantener carreras, cursos\ny sílabos" as UCAdminCatalog
+    usecase "Revisar analítica\ny eventos" as UCAnalytics
+  }
+
+  package "Capacidades IA" as AIUC #F5F3FF {
+    usecase "Generar explicación\nestructurada" as UCAIExplain
+    usecase "Generar narrativa\nde comparación" as UCAICompare
+  }
 }
 
+' =========================================================
+' Anclas visuales ocultas
+' Solo distribuyen el diagrama; no cambian la lógica
+' =========================================================
+Student -[hidden]right- StudentJourney
+Guest -[hidden]down- Student
+Family -[hidden]down- Advisor
+Advisor -[hidden]down- Admin
+Admin -[hidden]down- AI
+
+AccessUC -[hidden]right- StudentJourney
+StudentJourney -[hidden]right- SupportUC
+SupportUC -[hidden]right- AdminUC
+AdminUC -[hidden]right- AIUC
+
+UCGuest -[hidden]down- UCProfile
+UCProfile -[hidden]down- UCConsent
+UCConsent -[hidden]down- UCReport
+
+UCCatalog -[hidden]down- UCCompare
+UCCompare -[hidden]down- UCFit
+UCFit -[hidden]down- UCExplain
+UCExplain -[hidden]down- UCShortlist
+UCShortlist -[hidden]down- UCPlan
+UCPlan -[hidden]down- UCShare
+
+' =========================================================
+' Relaciones de actores
+' Estudiante resaltado como flujo principal
+' =========================================================
 Guest --> UCGuest
 Guest --> UCCatalog
 Guest --> UCCompare
-Student --> UCProfile
-Student --> UCConsent
-Student --> UCReport
-Student --> UCCatalog
-Student --> UCCompare
-Student --> UCExplain
-Student --> UCShortlist
-Student --> UCPlan
-Student --> UCShare
+
+Student -[#2563EB,thickness=3]-> UCProfile
+Student -[#2563EB,thickness=3]-> UCConsent
+Student -[#2563EB,thickness=3]-> UCReport
+Student -[#2563EB,thickness=3]-> UCCatalog
+Student -[#2563EB,thickness=3]-> UCCompare
+Student -[#2563EB,thickness=3]-> UCExplain
+Student -[#2563EB,thickness=3]-> UCShortlist
+Student -[#2563EB,thickness=3]-> UCPlan
+Student -[#2563EB,thickness=3]-> UCShare
+
 Family --> UCReadShare
+
 Advisor --> UCAdvisor
 Advisor --> UCCatalog
 Advisor --> UCCompare
+
 Admin --> UCAdminCatalog
 Admin --> UCAnalytics
+
 AI --> UCAIExplain
 AI --> UCAICompare
 
+' =========================================================
+' Relaciones include / extend
+' =========================================================
 UCProfile .> UCConsent : <<include>>
 UCReport .> UCConsent : <<include>>
+
 UCCompare .> UCFit : <<include>>
 UCCompare .> UCAICompare : <<include>>
+
 UCExplain .> UCAIExplain : <<include>>
+
 UCPlan .> UCShortlist : <<extend>>
 UCShare .> UCPlan : <<extend>>
+
 UCAdvisor .> UCCompare : <<include>>
+
+' =========================================================
+' Nota de lectura
+' =========================================================
+note bottom of StudentJourney
+El bloque central resalta el journey principal del estudiante:
+explorar, comparar, entender sílabos, guardar opciones,
+crear un plan y compartir la decisión.
+end note
+
 @enduml
+```

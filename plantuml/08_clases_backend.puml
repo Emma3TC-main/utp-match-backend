@@ -156,7 +156,7 @@ package "repositories" {
 }
 
 package "adapters" {
-  class ChatlyAIAdapter {
+  class GeminiAIAdapter {
     +completeStructured(prompt, schema): object
   }
   class ObjectStorageAdapter {
@@ -180,7 +180,7 @@ SyllabiController --> SyllabusExplanationService
 PlansController --> ActionPlanService
 ComparisonService --> AIOrchestrator
 SyllabusExplanationService --> AIOrchestrator
-AIOrchestrator --> ChatlyAIAdapter
+AIOrchestrator --> GeminiAIAdapter
 ReportService --> ObjectStorageAdapter
 CatalogService --> CareerRepository
 CatalogService --> CourseRepository

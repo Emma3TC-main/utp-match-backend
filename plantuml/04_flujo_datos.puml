@@ -1,5 +1,12 @@
-@startuml
+```plantuml
+@startuml 04_flujo_datos_utp_match_maestro
 !pragma layout smetana
+
+' =========================================================
+' Configuración visual general
+' =========================================================
+top to bottom direction
+
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam handwritten false
@@ -7,80 +14,227 @@ skinparam defaultFontName Arial
 skinparam packageStyle rectangle
 skinparam componentStyle rectangle
 skinparam linetype ortho
-skinparam ArrowColor #444444
+skinparam ArrowColor #475569
 skinparam classAttributeIconSize 0
-skinparam roundcorner 12
-skinparam nodesep 45
-skinparam ranksep 40
-title UTP Match - Diagrama de flujo de datos DFD nivel 1
+skinparam roundcorner 14
+skinparam nodesep 85
+skinparam ranksep 85
+skinparam defaultTextAlignment center
+skinparam dpi 130
 
-actor "Estudiante" as Student
-actor "Administrador" as Admin
-actor "Familia/Tutor" as Family
+skinparam title {
+  FontSize 21
+  FontStyle bold
+  FontColor #0F172A
+}
 
-rectangle "P1. Capturar perfil\ny consentimiento" as P1
-rectangle "P2. Registrar reporte\nvocacional" as P2
-rectangle "P3. Consultar catálogo\nde carreras/cursos" as P3
-rectangle "P4. Generar comparación\nde carreras" as P4
-rectangle "P5. Explicar sílabo\ncon IA" as P5
-rectangle "P6. Crear plan\nde acción" as P6
-rectangle "P7. Compartir resumen" as P7
-rectangle "P8. Registrar analítica\ny auditoría" as P8
-rectangle "P9. Mantener catálogo\ny sílabos" as P9
+skinparam actor {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+}
 
-collections "D1 users\nstudent_profiles\nconsent_records" as D1
-collections "D2 vocational_reports" as D2
-database "D3 careers\ncourses\ncareer_courses\nsyllabi" as D3
-collections "D4 career_comparisons\nsyllabus_explanations" as D4
-collections "D5 plans_of_action\nshared_links" as D5
-collections "D6 event_logs\naudit_logs" as D6
-folder "D7 object storage\nPDFs/reportes" as D7
-cloud "E1 Chatly AI" as E1
-cloud "E2 Test Vocacional UTP\nFuturo / carga manual MVP" as E2
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #334155
+  FontColor #0F172A
+}
 
-Student --> P1 : datos básicos / guest
+skinparam database {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam folder {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #0F172A
+}
+
+skinparam cloud {
+  BackgroundColor #F5F3FF
+  BorderColor #6D28D9
+  FontColor #0F172A
+}
+
+skinparam note {
+  BackgroundColor #FEFCE8
+  BorderColor #A16207
+  FontColor #1E293B
+}
+
+title UTP Match - DFD nivel 1 maestro
+
+' =========================================================
+' Actores
+' =========================================================
+actor "Estudiante\nusuario principal MVP" as Student
+actor "Familia / Tutor\nopcional" as Family
+actor "Administrador\nbackoffice mínimo" as Admin
+
+' =========================================================
+' Procesos del journey principal
+' =========================================================
+package "Journey principal del estudiante" as Journey #E0F2FE {
+
+  package "Inicio y preparación" as JourneyStart #F0F9FF {
+    rectangle "P1. Capturar perfil\ny consentimiento" as P1 #DBEAFE
+    rectangle "P2. Registrar reporte\nvocacional" as P2 #FFFFFF
+    rectangle "P3. Consultar catálogo\nde carreras / cursos" as P3 #FFFFFF
+  }
+
+  package "Decisión y acción" as JourneyDecision #F0F9FF {
+    rectangle "P4. Generar comparación\nde carreras" as P4 #FFFFFF
+    rectangle "P5. Explicar sílabo\ncon IA" as P5 #FFFFFF
+    rectangle "P6. Crear plan\nde acción" as P6 #FFFFFF
+  }
+}
+
+' =========================================================
+' Procesos de soporte
+' =========================================================
+package "Flujos de soporte" as Support #F8FAFC {
+  rectangle "P7. Compartir resumen\nfamiliar" as P7 #FFFFFF
+  rectangle "P8. Registrar eventos\ny auditoría" as P8 #F1F5F9
+  rectangle "P9. Mantener catálogo\ny sílabos" as P9 #FFFFFF
+}
+
+' =========================================================
+' Almacenes principales
+' =========================================================
+package "Almacenes principales" as DataStores #FFEDD5 {
+
+  package "Datos del estudiante" as StudentData #FFF7ED {
+    database "D1 Perfil y consentimiento" as D1
+    database "D2 Reporte vocacional" as D2
+  }
+
+  package "Datos académicos y resultados" as AcademicData #FFF7ED {
+    database "D3 Catálogo académico" as D3
+    database "D4 Comparaciones\ny explicaciones IA" as D4
+    database "D5 Planes\ny enlaces compartidos" as D5
+  }
+
+  package "Operación y archivos" as OpsData #FFF7ED {
+    database "D6 Eventos\ny auditoría" as D6
+    folder "D7 Object Storage\nPDFs / reportes" as D7
+  }
+}
+
+' =========================================================
+' Servicios externos / roadmap
+' =========================================================
+package "Servicios externos / roadmap" as External #F5F3FF {
+  cloud "E1 Gemini AI" as E1
+  cloud "E2 Test Vocacional UTP\nadapter futuro" as E2
+}
+
+' =========================================================
+' Anclas visuales ocultas
+' Solo ordenan el layout; no cambian la lógica
+' =========================================================
+Student -[hidden]right- Family
+Family -[hidden]right- Admin
+
+Student -[hidden]down- Journey
+Journey -[hidden]down- Support
+Support -[hidden]down- DataStores
+DataStores -[hidden]right- External
+
+JourneyStart -[hidden]right- JourneyDecision
+
+P1 -[hidden]right- P2
+P2 -[hidden]right- P3
+P4 -[hidden]right- P5
+P5 -[hidden]right- P6
+
+P7 -[hidden]right- P8
+P8 -[hidden]right- P9
+
+StudentData -[hidden]right- AcademicData
+AcademicData -[hidden]right- OpsData
+
+D1 -[hidden]right- D2
+D3 -[hidden]right- D4
+D4 -[hidden]right- D5
+D6 -[hidden]right- D7
+
+E1 -[hidden]down- E2
+
+' =========================================================
+' Flujo principal del estudiante
+' =========================================================
+Student --> P1 : inicia experiencia
+P1 --> P2 : perfil disponible
+P2 --> P3 : intereses / scores
+P3 --> P4 : carreras elegidas
+P4 --> P5 : cursos / sílabos relevantes
+P5 --> P6 : hallazgos accionables
+
+' =========================================================
+' Flujos de soporte
+' =========================================================
+Student --> P7 : comparte resumen
+Family ..> P7 : consulta resumen
+
+Admin ..> P9 : mantiene datos maestros
+
+' =========================================================
+' Persistencia de datos
+' =========================================================
 P1 --> D1 : perfil + consentimiento
-Student --> P2 : formulario o archivo
-E2 ..> P2 : adapter posterior
-P2 --> D2 : scores_json / top_careers_json
-P2 --> D7 : PDF/archivo original
-Student --> P3 : selecciona 2-3 carreras
-P3 --> D3 : consulta malla y cursos
-D3 --> P3 : catálogo publicable
-P3 --> Student : opciones y ciclos
-Student --> P4 : solicita duelo de carreras
-P4 --> D1 : perfil
-P4 --> D2 : scores
-P4 --> D3 : cursos/sílabos
-P4 --> E1 : contexto mínimo + prompt
-E1 --> P4 : JSON estructurado validable
-P4 --> D4 : comparison_json
-P4 --> Student : resumen, barras, fitNarrative
-Student --> P5 : abre curso/sílabo
-P5 --> D3 : parsed_json / syllabus
-P5 --> E1 : prompt explicación
-E1 --> P5 : explanation_json
-P5 --> D4 : explicación cacheable
-P5 --> Student : explicación clara
-Student --> P6 : elige meta y tareas
-P6 --> D5 : tasks_json / status
-P6 --> Student : plan accionable
-Student --> P7 : genera enlace familiar
-P7 --> D5 : shared_link
-Family --> P7 : lee resumen compartido
-Admin --> P9 : alta/edición carreras\ncursos/sílabos
-P9 --> D3 : datos maestros versionados
-P1 --> P8
-P2 --> P8
-P4 --> P8
-P5 --> P8
-P6 --> P8
-P7 --> P8
-P9 --> P8
-P8 --> D6 : eventos/auditoría
 
-note right of E1
-No enviar PDF completo si no es necesario.
-Usar minimización de contexto y validación JSON.
+P2 --> D2 : scores_json
+P2 --> D7 : archivo original\nsi aplica
+
+P3 --> D3 : consulta catálogo
+
+P4 --> D4 : comparison_json
+P5 --> D4 : explanation_json
+
+P6 --> D5 : plan de acción
+P7 --> D5 : shared_link
+
+P8 --> D6 : event_logs / audit_logs
+
+P9 --> D3 : catálogo versionado
+P9 --> D7 : PDFs de sílabos
+
+' =========================================================
+' IA e integración vocacional futura
+' =========================================================
+P4 --> E1 : comparación con IA
+P5 --> E1 : explicación de sílabo
+
+E2 ..> P2 : importación futura
+
+' =========================================================
+' Eventos y auditoría
+' Se dibujan discretos para evitar saturar el maestro
+' =========================================================
+P1 -[#94A3B8,dashed]-> P8
+P2 -[#94A3B8,dashed]-> P8
+P3 -[#94A3B8,dashed]-> P8
+P4 -[#94A3B8,dashed]-> P8
+P5 -[#94A3B8,dashed]-> P8
+P6 -[#94A3B8,dashed]-> P8
+P7 -[#94A3B8,dashed]-> P8
+P9 -[#94A3B8,dashed]-> P8
+
+' =========================================================
+' Notas
+' =========================================================
+note bottom of Journey
+Este diagrama maestro resume el flujo completo.
+El detalle operativo queda separado en los diagramas 04.1 a 04.4.
 end note
+
+note right of External
+La demo prioriza el journey del estudiante.
+Familia, administración e integración vocacional externa
+se mantienen como soporte o evolución.
+end note
+
 @enduml
+```
