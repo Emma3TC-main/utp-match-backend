@@ -1,0 +1,197 @@
+{
+  "product": {
+    "name": "UTP Match / SyllabusX",
+    "purpose": "Ayudar a estudiantes de 4.º y 5.º de secundaria a entender cómo será estudiar una carrera universitaria antes de matricularse.",
+    "promise": "UTP Match ayuda al estudiante a entender cómo se verá vivir una carrera antes de decidir.",
+    "audience": [
+      "Estudiantes de secundaria",
+      "Familias o tutores",
+      "Orientadores UTP"
+    ],
+    "tone": [
+      "claro",
+      "juvenil",
+      "empático",
+      "directo",
+      "visual"
+    ]
+  },
+  "rules": [
+    {
+      "id": "rule-no-invent",
+      "title": "No inventar información",
+      "content": "Si la información no está en el contexto, indicar que no hay información suficiente y sugerir hablar con un asesor o revisar el catálogo oficial."
+    },
+    {
+      "id": "rule-student-tone",
+      "title": "Explicar para estudiantes",
+      "content": "Responder como guía para un estudiante de secundaria, evitando tecnicismos innecesarios."
+    },
+    {
+      "id": "rule-not-diagnosis",
+      "title": "No reemplazar orientación vocacional",
+      "content": "La respuesta debe ser apoyo exploratorio, no diagnóstico definitivo."
+    },
+    {
+      "id": "rule-next-step",
+      "title": "Siguiente paso",
+      "content": "Cerrar con una acción concreta: comparar carreras, revisar sílabo, hablar con familia o crear plan de acción."
+    }
+  ],
+  "careers": [
+    {
+      "id": "software-engineering",
+      "type": "career",
+      "title": "Ingeniería de Software",
+      "summary": "Carrera enfocada en crear soluciones digitales, aplicaciones, sistemas web, arquitectura de software y productos tecnológicos.",
+      "firstCycles": "En los primeros ciclos se trabaja lógica, programación, matemática base, comunicación y fundamentos de ingeniería.",
+      "studentFit": [
+        "Le gusta crear aplicaciones o páginas web.",
+        "Tiene curiosidad por la inteligencia artificial.",
+        "Tolera probar, equivocarse y depurar errores.",
+        "Prefiere proyectos concretos antes que teoría pura."
+      ],
+      "skills": [
+        "Pensamiento lógico",
+        "Programación",
+        "Resolución de problemas",
+        "Diseño de soluciones digitales"
+      ],
+      "challenges": [
+        "Puede frustrar al inicio si el estudiante no está acostumbrado a practicar y corregir errores.",
+        "Requiere constancia para programar y mejorar paso a paso."
+      ],
+      "tags": [
+        "tecnologia",
+        "programacion",
+        "software",
+        "apps",
+        "ia"
+      ]
+    },
+    {
+      "id": "industrial-engineering",
+      "type": "career",
+      "title": "Ingeniería Industrial",
+      "summary": "Carrera orientada a mejorar procesos, optimizar operaciones, analizar datos de negocio y gestionar recursos.",
+      "firstCycles": "En los primeros ciclos combina matemática, comunicación, fundamentos de ingeniería y visión de procesos.",
+      "studentFit": [
+        "Le interesa cómo funcionan las empresas.",
+        "Disfruta organizar, medir y mejorar actividades.",
+        "Tiene facilidad para comunicar ideas.",
+        "Le atrae combinar números con gestión."
+      ],
+      "skills": [
+        "Análisis de procesos",
+        "Gestión",
+        "Optimización",
+        "Comunicación",
+        "Pensamiento sistémico"
+      ],
+      "challenges": [
+        "Puede sentirse amplia si el estudiante espera una carrera puramente técnica.",
+        "Requiere comodidad para trabajar con personas, procesos y datos."
+      ],
+      "tags": [
+        "procesos",
+        "gestion",
+        "operaciones",
+        "datos",
+        "productividad"
+      ]
+    },
+    {
+      "id": "data-science",
+      "type": "career",
+      "title": "Ciencia de Datos",
+      "summary": "Carrera enfocada en analizar datos, construir modelos, interpretar información y apoyar decisiones con tecnología.",
+      "firstCycles": "En los primeros ciclos fortalece matemática, lógica, programación inicial y fundamentos de análisis.",
+      "studentFit": [
+        "Le gusta encontrar patrones.",
+        "Tiene curiosidad por gráficos, datos o predicciones.",
+        "No le molesta trabajar con números.",
+        "Quiere entender cómo la IA usa información."
+      ],
+      "skills": [
+        "Análisis de datos",
+        "Estadística",
+        "Programación",
+        "Pensamiento crítico",
+        "Visualización"
+      ],
+      "challenges": [
+        "Puede ser retadora si el estudiante evita matemática o estadística.",
+        "Requiere paciencia para interpretar datos y validar resultados."
+      ],
+      "tags": [
+        "datos",
+        "analitica",
+        "ia",
+        "estadistica",
+        "programacion"
+      ]
+    }
+  ],
+  "syllabi": [
+    {
+      "id": "syl-soft-prog-1",
+      "type": "syllabus",
+      "careerId": "software-engineering",
+      "courseName": "Fundamentos de Programación",
+      "cycleNumber": 1,
+      "area": "Programación",
+      "summary": "Curso inicial para aprender lógica, algoritmos y construcción de programas simples.",
+      "difficultySignals": {
+        "practiceIntensity": 9,
+        "readingIntensity": 4,
+        "abstractReasoning": 6,
+        "frustrationTolerance": 8
+      },
+      "recommendedPreparation": [
+        "Practicar lógica básica.",
+        "Tener paciencia para corregir errores.",
+        "Resolver ejercicios cortos de forma constante."
+      ]
+    },
+    {
+      "id": "syl-soft-math-1",
+      "type": "syllabus",
+      "careerId": "software-engineering",
+      "courseName": "Matemática para Ingeniería I",
+      "cycleNumber": 1,
+      "area": "Matemática",
+      "summary": "Curso base para fortalecer razonamiento matemático aplicado a ingeniería.",
+      "difficultySignals": {
+        "practiceIntensity": 7,
+        "readingIntensity": 5,
+        "abstractReasoning": 8,
+        "frustrationTolerance": 6
+      },
+      "recommendedPreparation": [
+        "Repasar álgebra escolar.",
+        "Practicar ejercicios cortos diariamente.",
+        "Consultar dudas desde la primera semana."
+      ]
+    },
+    {
+      "id": "syl-ind-intro",
+      "type": "syllabus",
+      "careerId": "industrial-engineering",
+      "courseName": "Introducción a la Ingeniería Industrial",
+      "cycleNumber": 1,
+      "area": "Gestión y procesos",
+      "summary": "Curso que presenta el rol de la ingeniería industrial en empresas, procesos y operaciones.",
+      "difficultySignals": {
+        "practiceIntensity": 7,
+        "readingIntensity": 7,
+        "abstractReasoning": 5,
+        "frustrationTolerance": 5
+      },
+      "recommendedPreparation": [
+        "Tener interés por empresas y procesos.",
+        "Observar cómo se organizan actividades.",
+        "Practicar comunicación para trabajo en equipo."
+      ]
+    }
+  ]
+}

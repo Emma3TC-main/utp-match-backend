@@ -2,24 +2,50 @@
 import { env } from "../../config/env";
 import { ok, fail } from "../../shared/responses/api-response";
 import { validateRequest } from "../../shared/validation/validate-request";
-import { aiTestRequestSchema } from "./dto/ai.dto";
+import { aiAskRequestSchema, aiTestRequestSchema } from "./dto/ai.dto";
+import { AiService } from "./ai.service";
 
 export const aiRoutes = Router();
+const aiService = new AiService();
 
-type GeminiGenerateContentResponse = {
-  candidates?: Array<{
-    content?: {
-      parts?: Array<{
-        text?: string;
-      }>;
-    };
-  }>;
-  usageMetadata?: unknown;
-  modelVersion?: string;
-};
+function handleAiError(res: Parameters<typeof fail>[0], error: unknown) {
+  const message = error instanceof Error ? error.message : "Error desconocido";
 
-function getGeminiGenerateUrl(): string {
-  return `https://generativelanguage.googleapis.com/v1beta/models/${env.aiModel}:generateContent`;
+  if (message === "AI_DISABLED") {
+    return fail(
+      res,
+      503,
+      "AI_DISABLED",
+      "El proveedor IA está desactivado. Revisar AI_ENABLED=true en .env."
+    );
+  }
+
+  if (message === "AI_PROVIDER_NOT_SUPPORTED") {
+    return fail(
+      res,
+      400,
+      "AI_PROVIDER_NOT_SUPPORTED",
+      "Este endpoint está configurado para usar Gemini.",
+      [{ provider: env.aiProvider }]
+    );
+  }
+
+  if (message === "GEMINI_API_KEY_NOT_CONFIGURED") {
+    return fail(
+      res,
+      503,
+      "GEMINI_API_KEY_NOT_CONFIGURED",
+      "La API Key de Gemini no está configurada o es temporal."
+    );
+  }
+
+  return fail(
+    res,
+    500,
+    "AI_PROVIDER_ERROR",
+    "No se pudo generar una respuesta con IA.",
+    [message]
+  );
 }
 
 aiRoutes.get("/status", (_req, res) => {
@@ -39,131 +65,38 @@ aiRoutes.post(
   "/test",
   validateRequest({ body: aiTestRequestSchema }),
   async (req, res) => {
-    if (!env.aiEnabled) {
-      return fail(
-        res,
-        503,
-        "AI_DISABLED",
-        "El proveedor IA está desactivado. Revisar AI_ENABLED=true en .env."
-      );
-    }
-
-    if (env.aiProvider !== "gemini") {
-      return fail(
-        res,
-        400,
-        "AI_PROVIDER_NOT_SUPPORTED",
-        "Esta prueba solo está configurada para Gemini.",
-        [{ provider: env.aiProvider }]
-      );
-    }
-
-    if (!env.geminiApiKeyConfigured) {
-      return fail(
-        res,
-        503,
-        "GEMINI_API_KEY_NOT_CONFIGURED",
-        "La API Key de Gemini no está configurada o es temporal."
-      );
-    }
-
     const prompt =
       typeof req.body?.prompt === "string" && req.body.prompt.trim().length > 0
         ? req.body.prompt.trim()
         : "Responde solo con OK si Gemini está funcionando.";
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), env.geminiTimeoutMs);
-
-    const startedAt = Date.now();
-
     try {
-      const response = await fetch(getGeminiGenerateUrl(), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": env.geminiApiKey
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: 0,
-            maxOutputTokens: 80
-          }
-        }),
-        signal: controller.signal
-      });
-
-      const rawText = await response.text();
-
-      if (!response.ok) {
-        return fail(
-          res,
-          response.status,
-          "GEMINI_API_ERROR",
-          "Gemini respondió con error.",
-          [
-            {
-              status: response.status,
-              body: rawText.slice(0, 2000)
-            }
-          ]
-        );
-      }
-
-      const data = JSON.parse(rawText) as GeminiGenerateContentResponse;
-      const generatedText =
-        data.candidates?.[0]?.content?.parts
-          ?.map((part) => part.text || "")
-          .join("")
-          .trim() || "";
-
-      if (!generatedText) {
-        return fail(
-          res,
-          502,
-          "GEMINI_EMPTY_RESPONSE",
-          "Gemini respondió, pero no devolvió texto usable.",
-          [data]
-        );
-      }
+      const result = await aiService.generateText(prompt, 80);
 
       return ok(res, {
         provider: env.aiProvider,
         model: env.aiModel,
-        modelVersion: data.modelVersion || null,
-        generatedText,
-        latencyMs: Date.now() - startedAt,
-        usageMetadata: data.usageMetadata || null
+        modelVersion: result.modelVersion,
+        generatedText: result.generatedText,
+        latencyMs: result.latencyMs,
+        usageMetadata: result.usageMetadata
       });
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        return fail(
-          res,
-          504,
-          "GEMINI_TIMEOUT",
-          `Gemini no respondió dentro de ${env.geminiTimeoutMs}ms.`
-        );
-      }
+      return handleAiError(res, error);
+    }
+  }
+);
 
-      return fail(
-        res,
-        500,
-        "GEMINI_TEST_ERROR",
-        "No se pudo probar Gemini.",
-        [error instanceof Error ? error.message : "Error desconocido"]
-      );
-    } finally {
-      clearTimeout(timeout);
+aiRoutes.post(
+  "/ask",
+  validateRequest({ body: aiAskRequestSchema }),
+  async (req, res) => {
+    try {
+      const result = await aiService.askWithKnowledge(req.body);
+
+      return ok(res, result);
+    } catch (error) {
+      return handleAiError(res, error);
     }
   }
 );
