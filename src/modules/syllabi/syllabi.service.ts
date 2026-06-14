@@ -1,4 +1,6 @@
 ﻿import { randomUUID } from "crypto";
+import { env } from "../../config/env";
+import { AiService } from "../ai/ai.service";
 import {
   SyllabusDetailDto,
   SyllabusExplanationRequestDto,
@@ -236,12 +238,177 @@ const syllabi: SyllabusDetailDto[] = [
 
 const explanationStore = new Map<string, SyllabusExplanationResponseDto>();
 
+type AiSyllabusExplanationPayload = {
+  plainExplanation?: unknown;
+  whyItMatters?: unknown;
+  difficultySignals?: {
+    practiceIntensity?: unknown;
+    readingIntensity?: unknown;
+    abstractReasoning?: unknown;
+    frustrationTolerance?: unknown;
+  };
+  skillsYouBuild?: unknown;
+  exampleActivities?: unknown;
+  fitComment?: unknown;
+  recommendedPreparation?: unknown;
+};
+
 function toSummary(syllabus: SyllabusDetailDto): SyllabusSummaryDto {
   const { parsed, ...summary } = syllabus;
   return summary;
 }
 
+function asNonEmptyString(value: unknown, fallback: string): string {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : fallback;
+}
+
+function asStringArray(value: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const items = value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return items.length > 0 ? items : fallback;
+}
+
+function clampIntensity(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  return Math.max(0, Math.min(10, Math.round(parsed)));
+}
+
+function extractJsonObject(text: string): AiSyllabusExplanationPayload {
+  const fencedMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const candidate = fencedMatch?.[1] ?? text;
+  const firstBrace = candidate.indexOf("{");
+  const lastBrace = candidate.lastIndexOf("}");
+
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    throw new Error("AI_JSON_NOT_FOUND");
+  }
+
+  return JSON.parse(candidate.slice(firstBrace, lastBrace + 1)) as AiSyllabusExplanationPayload;
+}
+
+function buildSyllabusPrompt(
+  syllabus: SyllabusDetailDto,
+  input: SyllabusExplanationRequestDto
+): string {
+  return [
+    "Eres el asistente IA de UTP Match / SyllabusX.",
+    "Explica un silabo universitario a un estudiante de secundaria de Peru.",
+    "Responde SOLO con JSON valido, sin markdown, sin bloque de codigo.",
+    "",
+    "El JSON debe tener exactamente estas claves:",
+    "{",
+    '  "plainExplanation": "string",',
+    '  "whyItMatters": "string",',
+    '  "difficultySignals": {',
+    '    "practiceIntensity": number,',
+    '    "readingIntensity": number,',
+    '    "abstractReasoning": number,',
+    '    "frustrationTolerance": number',
+    "  },",
+    '  "skillsYouBuild": ["string"],',
+    '  "exampleActivities": ["string"],',
+    '  "fitComment": "string",',
+    '  "recommendedPreparation": ["string"]',
+    "}",
+    "",
+    "Reglas:",
+    "- Usa español claro, directo y empatico.",
+    "- No prometas empleabilidad ni resultados garantizados.",
+    "- No digas que una carrera es la unica opcion correcta.",
+    "- Los valores de difficultySignals deben ser enteros de 0 a 10.",
+    "- No inventes datos que no esten en el silabo; si falta algo, explicalo como recomendacion general.",
+    "",
+    "Audiencia:",
+    input.targetAudience,
+    "",
+    "Tono:",
+    input.tone,
+    "",
+    "Silabo:",
+    JSON.stringify(
+      {
+        syllabusId: syllabus.syllabusId,
+        courseName: syllabus.courseName,
+        careerId: syllabus.careerId,
+        courseId: syllabus.courseId,
+        cycleNumber: syllabus.cycleNumber,
+        area: syllabus.area,
+        credits: syllabus.credits,
+        shortDescription: syllabus.shortDescription,
+        purpose: syllabus.parsed.purpose,
+        learningOutcomes: syllabus.parsed.learningOutcomes,
+        units: syllabus.parsed.units,
+        evaluation: syllabus.parsed.evaluation,
+        recommendedBackground: syllabus.parsed.recommendedBackground,
+        context: input.context || {}
+      },
+      null,
+      2
+    )
+  ].join("\n");
+}
+
+function buildMockExplanation(
+  syllabus: SyllabusDetailDto,
+  input: SyllabusExplanationRequestDto,
+  safetyNotes: string[] = [
+    "Explicacion mock usada como fallback del flujo de explicacion de silabo."
+  ]
+): SyllabusExplanationResponseDto {
+  return {
+    explanationId: randomUUID(),
+    syllabusId: syllabus.syllabusId,
+    courseName: syllabus.courseName,
+    targetAudience: input.targetAudience,
+    plainExplanation:
+      `Este curso, ${syllabus.courseName}, te ayuda a entender bases importantes de ${syllabus.area}. No esta pensado para que memorices todo, sino para que practiques, conectes ideas y entiendas como se usa en la carrera.`,
+    whyItMatters:
+      `Importa porque aparece temprano en la carrera y te prepara para cursos posteriores. Tambien te ayuda a confirmar si el tipo de retos de ${syllabus.area} se siente alineado contigo.`,
+    difficultySignals: {
+      practiceIntensity: syllabus.area.toLowerCase().includes("programación") ? 9 : 7,
+      readingIntensity: syllabus.area.toLowerCase().includes("gestión") ? 7 : 5,
+      abstractReasoning: syllabus.area.toLowerCase().includes("matemática") ? 8 : 6,
+      frustrationTolerance: syllabus.area.toLowerCase().includes("programación") ? 8 : 6
+    },
+    skillsYouBuild: syllabus.parsed.learningOutcomes,
+    exampleActivities: [
+      "Resolver ejercicios guiados.",
+      "Trabajar un caso o proyecto corto.",
+      "Explicar con tus palabras que aprendiste y para que sirve."
+    ],
+    fitComment:
+      "Si te interesa esta carrera, este curso te dara una primera muestra realista de como se estudia y que tipo de esfuerzo exige.",
+    recommendedPreparation: syllabus.parsed.recommendedBackground,
+    modelMetadata: {
+      provider: "mock",
+      model: "mock-syllabus-explainer-v1",
+      promptVersion: "syllabus.explanation.mock.v1",
+      cacheHit: false,
+      fallbackUsed: true,
+      latencyMs: 0,
+      safetyNotes
+    },
+    createdAt: new Date().toISOString()
+  };
+}
+
 export class SyllabiService {
+  constructor(private readonly aiService = new AiService()) {}
+
   public async listSyllabi(query: SyllabusQueryDto): Promise<SyllabusSummaryDto[]> {
     const normalizedQ = query.q?.toLowerCase();
 
@@ -294,43 +461,82 @@ export class SyllabiService {
       return null;
     }
 
-    const explanation: SyllabusExplanationResponseDto = {
-      explanationId: randomUUID(),
-      syllabusId: syllabus.syllabusId,
-      courseName: syllabus.courseName,
-      targetAudience: input.targetAudience,
-      plainExplanation:
-        `Este curso, ${syllabus.courseName}, te ayuda a entender bases importantes de ${syllabus.area}. No está pensado para que memorices todo, sino para que practiques, conectes ideas y entiendas cómo se usa en la carrera.`,
-      whyItMatters:
-        `Importa porque aparece temprano en la carrera y te prepara para cursos posteriores. También te ayuda a confirmar si el tipo de retos de ${syllabus.area} se siente alineado contigo.`,
-      difficultySignals: {
-        practiceIntensity: syllabus.area.toLowerCase().includes("programación") ? 9 : 7,
-        readingIntensity: syllabus.area.toLowerCase().includes("gestión") ? 7 : 5,
-        abstractReasoning: syllabus.area.toLowerCase().includes("matemática") ? 8 : 6,
-        frustrationTolerance: syllabus.area.toLowerCase().includes("programación") ? 8 : 6
-      },
-      skillsYouBuild: syllabus.parsed.learningOutcomes,
-      exampleActivities: [
-        "Resolver ejercicios guiados.",
-        "Trabajar un caso o proyecto corto.",
-        "Explicar con tus palabras qué aprendiste y para qué sirve."
-      ],
-      fitComment:
-        "Si te interesa esta carrera, este curso te dará una primera muestra realista de cómo se estudia y qué tipo de esfuerzo exige.",
-      recommendedPreparation: syllabus.parsed.recommendedBackground,
-      modelMetadata: {
-        provider: "mock",
-        model: "mock-syllabus-explainer-v1",
-        promptVersion: "syllabus.explanation.mock.v1",
-        cacheHit: false,
-        fallbackUsed: true,
-        latencyMs: 0,
-        safetyNotes: [
-          "Explicación mock usada para validar contrato DTO, controller y flujo de explicación de sílabo."
-        ]
-      },
-      createdAt: new Date().toISOString()
-    };
+    let explanation: SyllabusExplanationResponseDto;
+
+    try {
+      const prompt = buildSyllabusPrompt(syllabus, input);
+      const result = await this.aiService.generateText(prompt, 1200);
+      const payload = extractJsonObject(result.generatedText);
+
+      explanation = {
+        explanationId: randomUUID(),
+        syllabusId: syllabus.syllabusId,
+        courseName: syllabus.courseName,
+        targetAudience: input.targetAudience,
+        plainExplanation: asNonEmptyString(
+          payload.plainExplanation,
+          `Este curso te ayuda a entender bases importantes de ${syllabus.area}.`
+        ),
+        whyItMatters: asNonEmptyString(
+          payload.whyItMatters,
+          `Importa porque aparece temprano en la carrera y conecta con retos de ${syllabus.area}.`
+        ),
+        difficultySignals: {
+          practiceIntensity: clampIntensity(
+            payload.difficultySignals?.practiceIntensity,
+            7
+          ),
+          readingIntensity: clampIntensity(
+            payload.difficultySignals?.readingIntensity,
+            5
+          ),
+          abstractReasoning: clampIntensity(
+            payload.difficultySignals?.abstractReasoning,
+            6
+          ),
+          frustrationTolerance: clampIntensity(
+            payload.difficultySignals?.frustrationTolerance,
+            6
+          )
+        },
+        skillsYouBuild: asStringArray(
+          payload.skillsYouBuild,
+          syllabus.parsed.learningOutcomes
+        ),
+        exampleActivities: asStringArray(payload.exampleActivities, [
+          "Resolver ejercicios guiados.",
+          "Trabajar un caso o proyecto corto.",
+          "Explicar con tus palabras que aprendiste y para que sirve."
+        ]),
+        fitComment: asNonEmptyString(
+          payload.fitComment,
+          "Este curso te da una primera muestra realista de como se estudia esta carrera."
+        ),
+        recommendedPreparation: asStringArray(
+          payload.recommendedPreparation,
+          syllabus.parsed.recommendedBackground
+        ),
+        modelMetadata: {
+          provider: env.aiProvider === "gemini" ? "gemini" : "mock",
+          model: env.aiModel,
+          promptVersion: "syllabus.explanation.gemini.v1",
+          cacheHit: false,
+          fallbackUsed: false,
+          latencyMs: result.latencyMs,
+          safetyNotes: [
+            "Explicacion generada por IA y normalizada al contrato del backend."
+          ]
+        },
+        createdAt: new Date().toISOString()
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "AI_UNKNOWN_ERROR";
+
+      explanation = buildMockExplanation(syllabus, input, [
+        "Fallback mock usado porque la IA no pudo generar una respuesta valida.",
+        message.slice(0, 500)
+      ]);
+    }
 
     explanationStore.set(explanation.explanationId, explanation);
 
